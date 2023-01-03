@@ -41,3 +41,13 @@ clean:
 	rm -f $(BIN_DIR)/static/test_*
 	rm -f $(LIB_DIR)/static/*.a
 	rm -f $(OBJ_DIR)/*.o
+git:
+	git add src
+	git add include
+	git add Makefile
+	git add RetroRasterLib.code-workspace
+	git add .gitignore
+	git add *.md
+	@read -p "Please enter a commit message:" msg; \
+	git commit -m "$$msg"
+	git push

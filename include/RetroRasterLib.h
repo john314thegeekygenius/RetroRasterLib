@@ -8,6 +8,7 @@
 	as long as the name and author is 
 	refrenced to in the application
 	using it, such as:
+	
 				Made using RetroRasterLib
 	www.github.com/john314thegeekygenius/RetroRasterLib
 

@@ -8,6 +8,7 @@
 	as long as the name and author is 
 	refrenced to in the application
 	using it, such as:
+
 				Made using RetroRasterLib
 	www.github.com/john314thegeekygenius/RetroRasterLib
 
@@ -36,6 +37,12 @@
 #pragma once
 
 #include <RR_Headers.h>
+
+//
+// Returns a date and time string
+// Format:
+// D-M-T_H-M-S
+std::string RR_GetDateString();
 
 //
 // Opens a log file

@@ -8,6 +8,7 @@
 	as long as the name and author is 
 	refrenced to in the application
 	using it, such as:
+
 				Made using RetroRasterLib
 	www.github.com/john314thegeekygenius/RetroRasterLib
 
@@ -34,18 +35,60 @@
 	
 */
 
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+#include <sstream>
+#include <fstream>
+#include <filesystem>
+
 #include <RetroRasterLib.h>
 
+// Log file to write to
+std::ofstream RR_LogFile;
 
+std::string RR_GetDateString(){
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%d-%m-%Y_%H-%M-%S");
+    auto str = oss.str();
+    return str;
+};
 
 void RR_OpenLog(){
-
+    // Make a "logs" directory
+    std::filesystem::create_directories("logs");
+    RR_LogFile.open(std::string("logs/rr_log_")+RR_GetDateString()+".log");
+    if(!RR_LogFile.is_open()){
+        RR_WriteLog("Error! Could not open output file.");
+        return;
+    }
+    RR_WriteLog("Opened log file");
 };
 
 void RR_WriteLog(std::string log_str){
-    std::string output_string = "[RetroRasterLib]";
+    // String to write to console
+    std::string output_string = "[RetroRasterLib] ";
+    // String to write to file
+    std::string raw_string = output_string;
+
+#if defined(__linux__) || (defined(__CYGWIN__) && !defined(_WIN32))
+    // Linux or Cygwin, so make the colors use linux format
+#endif
+#if defined(_WIN64) || defined(_WIN32)
+    // Microsoft Windows, so use windows console color format
+#endif
+
+    if(RR_LogFile.is_open()){
+    }
+    std::cout << output_string << log_str << std::endl;
+
 };
 
 void RR_CloseLog(){
-
+    if(RR_LogFile.is_open()){
+        RR_LogFile.close();
+    }
 };

@@ -8,6 +8,7 @@
 	as long as the name and author is 
 	refrenced to in the application
 	using it, such as:
+	
 				Made using RetroRasterLib
 	www.github.com/john314thegeekygenius/RetroRasterLib
 
@@ -31,7 +32,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-	
+
 */
 
 #include <RetroRasterLib.h>

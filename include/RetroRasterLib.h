@@ -21,24 +21,14 @@
 
 */
 
-#include <RetroRasterLib.h>
+#pragma once
 
-void __attribute__ ((constructor)) RR_InitLibrary(void) {
-	RR_OpenLog();
-	RR_WriteLog("Initializing...");
-	// Initialize SDL2
-	if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) < 0){
-//		RR_WriteLog("\cError! \dSDL cound not initialize!\n\cSDL_Error: \cf" + std::string(SDL_GetError()) );
-	}
-	RR_WriteLog("Done");
-};
+#include <RR_Headers.h>
+#include <RR_Graphics.h>
+#include <RR_Logger.h>
 
-void __attribute__ ((destructor)) RR_DestroyLibrary(void) {
-	RR_WriteLog("Shutting Down...");
-	RR_ForceQuit();
-	RR_CloseLog();
-};
+// Forces RetroRaster to quit everything
+// Should only be called if an error occurs
+void RR_ForceQuit();
 
-void RR_ForceQuit(){
-	RR_DestroyWindows();
-};
+

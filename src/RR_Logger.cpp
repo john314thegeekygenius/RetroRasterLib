@@ -23,22 +23,16 @@
 
 #include <RetroRasterLib.h>
 
-void __attribute__ ((constructor)) RR_InitLibrary(void) {
-	RR_OpenLog();
-	RR_WriteLog("Initializing...");
-	// Initialize SDL2
-	if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) < 0){
-//		RR_WriteLog("\cError! \dSDL cound not initialize!\n\cSDL_Error: \cf" + std::string(SDL_GetError()) );
-	}
-	RR_WriteLog("Done");
+
+
+void RR_OpenLog(){
+
 };
 
-void __attribute__ ((destructor)) RR_DestroyLibrary(void) {
-	RR_WriteLog("Shutting Down...");
-	RR_ForceQuit();
-	RR_CloseLog();
+void RR_WriteLog(std::string log_str){
+    std::string output_string = "[RetroRasterLib]";
 };
 
-void RR_ForceQuit(){
-	RR_DestroyWindows();
+void RR_CloseLog(){
+
 };

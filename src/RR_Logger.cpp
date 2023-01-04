@@ -74,16 +74,117 @@ void RR_WriteLog(std::string log_str){
     // String to write to file
     std::string raw_string = output_string;
 
-#if defined(__linux__) || (defined(__CYGWIN__) && !defined(_WIN32))
-    // Linux or Cygwin, so make the colors use linux format
-#endif
-#if defined(_WIN64) || defined(_WIN32)
-    // Microsoft Windows, so use windows console color format
-#endif
+    std::string escape_sequence = "";
+    #if defined(__linux__) || (defined(__CYGWIN__) && !defined(_WIN32))
+        // Linux or Cygwin, so make the colors use linux format
+        escape_sequence = "\033";
+    #endif
+    // TODO:
+    // Make sure this works on windows machines
+    #if defined(_WIN64) || defined(_WIN32)
+        // Microsoft Windows, so use windows console color format
+        escape_sequence = "ABCD";
+        escape_sequence[0] = 0xE2;
+        escape_sequence[1] = 0x90;
+        escape_sequence[2] = 0x9B;
+        escape_sequence[3] = 0x0A;
+    #endif
+    
+
+    int write_color = -1;
+    bool color_changed = false;
+    int write_bold = 0;
+    int write_flash = 0;
+
+    // Convert the formated string to a valid string
+    for(int i = 0; i < (int)log_str.length(); i++){
+        switch(log_str.at(i)){
+            case '\r':
+                // Reset the color
+                color_changed = true;
+            break;
+            case '\b':
+                // set to bold
+                if(write_bold == 0)
+                    write_bold = 1;
+                if(write_bold == 2)
+                    write_bold = -1;
+            break;
+            case '\f':
+                // set to flash
+                if(write_flash == 0)
+                    write_flash = 1;
+                if(write_flash == 2)
+                    write_flash = -1;
+            break;
+            case '\v':
+                // Set the color
+                i++;
+                if(i>=(int)log_str.length()){
+                    RR_WriteLog("Error writing string with color! Improper formating: \n::::" + log_str);
+                    return; // Don't write anything???
+                }
+                // Find the color
+                for(int cidx = 0; cidx < 16; cidx ++){
+                    if(tolower(log_str[i]) == "0123456789abcdef"[cidx]){
+                        write_color = cidx;
+                        break;
+                    }
+                }
+                color_changed = true;
+            break;
+            default:
+                // It's a normal character
+                output_string.push_back(log_str[i]);
+                raw_string.push_back(log_str[i]);
+            break;
+        }
+        if(write_bold == 1){
+            output_string += escape_sequence;
+            output_string += "[1m";
+            write_bold = 2;
+        }
+        if(write_bold == -1){
+            output_string += escape_sequence;
+            output_string += "[0m";
+            write_bold = 0;
+            color_changed = true;
+        }
+        if(write_flash == 1){
+            output_string += escape_sequence;
+            output_string += "[5m";
+            write_flash = 2;
+        }
+        if(write_flash == -1){
+            output_string += escape_sequence;
+            output_string += "[0m";
+            // Re color the text
+            write_flash = 0;
+            color_changed = true;
+        }
+
+        if(color_changed){
+            color_changed = false;
+            output_string += escape_sequence;
+            output_string += "[";
+            if(write_color < 8){
+                //output_string += "0;";
+                output_string += std::to_string(30+write_color);
+            }else{
+                //output_string += "1;";
+                output_string += std::to_string(82+write_color);
+            }
+            output_string += "m";
+        }
+    }
+    // Reset the color after every line
+    output_string += escape_sequence;
+    output_string += "[0m";
 
     if(RR_LogFile.is_open()){
+        RR_LogFile << raw_string << std::endl;
     }
-    std::cout << output_string << log_str << std::endl;
+    std::cout << output_string << std::endl;
 
 };
 

@@ -1,5 +1,6 @@
 /*
-    Window test for RetroRasterLib
+    Displaying simple shapes test 
+    for RetroRasterLib
     Written by Jonathan Clevenger
 
 	=================================================================
@@ -30,29 +31,24 @@ int main(int argc, char *args[]){
     // Setup the library
     RR_InitLibrary();
 
-    RR_WriteLog("Testing window");
-
     // Create a window
-	RR_Window local_window = RR_CreateWindow("Test Window", 320, 240, 2, 2);
+	RR_Window local_window = RR_CreateWindow("Test Window", 320, 240, 4, 4);
 
-    // Try to make another window
-	RR_Window local_window2 = RR_CreateWindow("Test Window 2", 1080, 720, 1, 1);
+    // Create a clear pixel (blue)
+    RR_Pixel clear_pixel = { RR_RGBA(0,0,255), 0};
 
+    // Clear the screen
+    RR_ClearScreen(local_window, clear_pixel);
+
+    // Draw 5 rectangles
+    RR_BlitRect(local_window, -32, 64, 128, 64, RR_Pixel(RR_RGBA(255,0,0), 0));
+
+    // Wait for the user to quit
     while(!RR_HasQuit()){
+        // Get inputs
         RR_UpdateWindow(local_window);
-    }
-
-    // Remove that window
-    RR_DestroyWindow(local_window);
-
-    // Fix the library
-    RR_FixFlags();
-
-    // Try to make another (valid) window
-	RR_Window local_window3 = RR_CreateWindow("Test Window 3", 64, 64, 4, 4);
-
-    while(!RR_HasQuit()){
-        RR_UpdateWindow(local_window);
+        // Render the scene
+        RR_RasterWindow(local_window);
     }
 
     // Shutdown the library

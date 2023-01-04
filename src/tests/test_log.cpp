@@ -1,5 +1,5 @@
 /*
-    Window test for RetroRasterLib
+    Log test for RetroRasterLib
     Written by Jonathan Clevenger
 
 	=================================================================
@@ -26,34 +26,17 @@
 
 
 int main(int argc, char *args[]){
-
     // Setup the library
     RR_InitLibrary();
 
-    RR_WriteLog("Testing window");
-
-    // Create a window
-	RR_Window local_window = RR_CreateWindow("Test Window", 320, 240, 2, 2);
-
-    // Try to make another window
-	RR_Window local_window2 = RR_CreateWindow("Test Window 2", 1080, 720, 1, 1);
-
-    while(!RR_HasQuit()){
-        RR_UpdateWindow(local_window);
-    }
-
-    // Remove that window
-    RR_DestroyWindow(local_window);
-
-    // Fix the library
-    RR_FixFlags();
-
-    // Try to make another (valid) window
-	RR_Window local_window3 = RR_CreateWindow("Test Window 3", 64, 64, 4, 4);
-
-    while(!RR_HasQuit()){
-        RR_UpdateWindow(local_window);
-    }
+    // Test writing to a log file
+    RR_WriteLog("Testing writing to log file!");
+    // Test color text
+    RR_WriteLog("\v0BLACK \v1RED \v2GREEN \v3YELLOW \v4BLUE \v5PURPLE \v6CYAN \v7GREY");
+    RR_WriteLog("\v8DGREY \v9LRED \vaLGREEN \vbLYELLOW \vcLBLUE \vdPINK \veLCYAN \vfWHITE");
+    RR_WriteLog("===========================================================");
+    RR_WriteLog("\rDEFAULT \fBLINKING\f \f\v2BLINKY GREEN\f NORMAL GREEN");
+    RR_WriteLog("\v3YELLOW \bBOLD\b YELLOW");
 
     // Shutdown the library
     RR_DestroyLibrary();

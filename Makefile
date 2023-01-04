@@ -1,7 +1,7 @@
 
 LIB_NAME := libRRasterLib
 
-CXX_FLAGS := -Wall -std=c++20 -Iinclude -I/usr/include/SDL2
+CXX_FLAGS := -Wall -g -std=c++20 -Iinclude -I/usr/include/SDL2
 CXX_LIBS := -lSDL2main -lSDL2 
 
 # Where the source code is
@@ -27,7 +27,7 @@ all: dirs clean build_lib build_tests
 dirs:
 	mkdir -p $(LIB_DIR)/static
 	mkdir -p $(OBJ_DIR)
-	mkdir -p $(BIN_DIR)/static
+	mkdir -p $(BIN_DIR)/tests
 
 build_lib:
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Logger.cpp -o $(OBJ_DIR)/RR_Logger.o $(CXX_LIBS)
@@ -35,10 +35,12 @@ build_lib:
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Lib.cpp -o $(OBJ_DIR)/RR_Lib.o $(CXX_LIBS)
 	ar rcs $(LIB_DIR)/static/$(LIB_NAME).a $(OBJ_FILES)
 build_tests:
-	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/static/test_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_log.cpp -o $(BIN_DIR)/tests/test_log $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/test_shapes $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/tests/test_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 
 clean:
-	rm -f $(BIN_DIR)/static/test_*
+	rm -f $(BIN_DIR)/test/test_*
 	rm -f $(LIB_DIR)/static/*.a
 	rm -f $(OBJ_DIR)/*.o
 git:

@@ -37,22 +37,50 @@
 
 #include <RetroRasterLib.h>
 
-void __attribute__ ((constructor)) RR_InitLibrary(void) {
+// Flag to indicate if we quit
+bool rr_quitFlag = false;
+
+void RR_InitLibrary(void) {
 	RR_OpenLog();
-	RR_WriteLog("Initializing...");
+	RR_WriteLog("[Init] Initializing...");
 	// Initialize SDL2
 	if(SDL_Init( SDL_INIT_VIDEO | SDL_INIT_EVENTS ) < 0){
-//		RR_WriteLog("\cError! \dSDL cound not initialize!\n\cSDL_Error: \cf" + std::string(SDL_GetError()) );
+		RR_WriteLog("[Init] Error! SDL cound not initialize!\nSDL_Error: " + std::string(SDL_GetError()) );
+		rr_quitFlag = true;
+		return;
 	}
-	RR_WriteLog("Done");
+	RR_WriteLog("[Init] Loaded SDL2 sucessfully!");
+	RR_WriteLog("[Init] Done");
+	// Fix any flags
+	RR_FixFlags();
 };
 
-void __attribute__ ((destructor)) RR_DestroyLibrary(void) {
+//__attribute__ ((destructor)) 
+void RR_DestroyLibrary(void) {
 	RR_WriteLog("Shutting Down...");
+	// Force everything to quit
 	RR_ForceQuit();
+	// Close the log
 	RR_CloseLog();
+    // Quit SDL2 subsystems
+    SDL_Quit();
+	// Incase something forgot
+	RR_Quit();
 };
 
 void RR_ForceQuit(){
 	RR_DestroyWindows();
+	rr_quitFlag = true;
+};
+
+void RR_Quit(){
+	rr_quitFlag = true;
+};
+
+bool RR_HasQuit(){
+	return rr_quitFlag;
+};
+
+void RR_FixFlags(){
+	rr_quitFlag = false;
 };

@@ -37,12 +37,30 @@
 
 #pragma once
 
+#define RR_VER_STRING "RR_v.0.0.1a"
+
 #include <RR_Headers.h>
 #include <RR_Graphics.h>
 #include <RR_Logger.h>
+
+// Setup the library
+// Make sure to call this first
+void RR_InitLibrary(void);
+
+// Shutdown the library
+// Make sure to call this last
+void RR_DestroyLibrary(void);
 
 // Forces RetroRaster to quit everything
 // Should only be called if an error occurs
 void RR_ForceQuit();
 
+// Set the Quit Flag to true
+void RR_Quit();
+
+// Returns the Quit Flag (Have we quit yet)
+bool RR_HasQuit();
+
+// "Fixes" the flags (i.e. Quit flag) - Sets the flags to default values
+void RR_FixFlags();
 

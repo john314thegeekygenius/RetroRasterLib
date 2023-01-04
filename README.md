@@ -1,8 +1,9 @@
 # Retro Raster Lib
-![](logo256.png)
+![Library logo](logo256.png)
 ### Features
-- 2D rasterizing
 - Pixel based graphics
+- 2D rasterizing
+![Picture of shapes test](images/shapes_demo.png)
 - Image loading
 ### Notes
  - This library is not done yet!

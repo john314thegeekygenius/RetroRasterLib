@@ -1,7 +1,7 @@
 
 LIB_NAME := libRRasterLib
 
-CXX_FLAGS := -Wall -g -std=c++20 -Iinclude -I/usr/include/SDL2
+CXX_FLAGS := -Wall -O3 -std=c++20 -Iinclude -I/usr/include/SDL2
 CXX_LIBS := -lSDL2main -lSDL2 
 
 # Where the source code is

@@ -45,19 +45,14 @@ typedef struct RR_Pixel_t {
     uint32_t depth = 0; // Depth of pixel
 }RR_Pixel;
 
-typedef struct SDL_WindowInfo_t {
-	SDL_Window *window_ptr = NULL;
-	SDL_Surface *window_surface = NULL;
-	SDL_Event window_events;
-}SDL_WindowInfo;
-
 typedef struct RR_Window_t {
     int win_width;    // Width of the window
     int win_height;   // Height of the window
     int screen_width; // Width of the pixel screen
     int screen_height;// Height of the pixel screen
-    int pixel_width;  // Width of pixels
-    int pixel_height; // Height of pixels
+    float pixel_width;  // Width of pixels
+    float pixel_height; // Height of pixels
+    bool keep_aspect; // Keep the aspect ratio of the screen
     RR_Color overscan_color; // Color to display when the 
                              // screen is smaller than the window
     std::vector<RR_Pixel> screen_pixels; // List of pixels to be displayed
@@ -65,8 +60,6 @@ typedef struct RR_Window_t {
     std::string window_name; // Name of the window
     int window_index; // Index into the window handler
 }RR_Window;
-
-
 
 /*
 Returns a new window
@@ -77,16 +70,13 @@ screen_height -> Height of the pixel screen
 pixel_res_x   -> Width of the pixels rendered
 pixel_res_y   -> Height of the pixels rendered
 */
-RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height, int pixel_res_x, int pixel_res_y);
+RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height, float pixel_res_x, float pixel_res_y, uint32_t flags = 0);
 
 // window   ->   Refrence to window to be destroyed
 void RR_DestroyWindow(RR_Window &window);
 
 // Destroys all windows (should not be called by user)
 void RR_DestroyWindows();
-
-// Destroys all SDL windows (should not be called by user)
-void RR_WipeSDLWindow(SDL_WindowInfo &info);
 
 // Updates the window and checks window events 
 // window   ->   Refrence to window to be rastered
@@ -95,6 +85,13 @@ void RR_UpdateWindow(RR_Window &window);
 // Renders the graphics to the window
 // window   ->   Refrence to window to be rastered
 void RR_RasterWindow(RR_Window &window);
+
+
+// Returns the current Frames Per Second of the window
+uint32_t RR_GetFPS();
+
+// Sets the maximum fps
+void RR_SetMaxFPS(uint32_t maxfps);
 
 /*
 r -> Red value
@@ -114,6 +111,39 @@ h       -> height of rectangle
 pixel   -> pixel info to render
 */
 void RR_BlitRect(RR_Window &window, int x, int y, int w, int h, RR_Pixel pixel);
+
+/*
+Draws an ellipse on the screen
+window  -> window to render to
+x       -> centered position horizontaly on the screen
+y       -> centered position vertically on the screen
+w       -> width of ellipse
+h       -> height of ellipse
+pixel   -> pixel info to render
+*/
+void RR_BlitEllipse(RR_Window &window, int x, int y, int w, int h, RR_Pixel pixel);
+
+
+/*
+Draws a line on the screen
+window  -> window to render to
+x1      -> point A position horizontaly on the screen
+y1      -> point A position vertically on the screen
+x2      -> point B position horizontaly on the screen
+y2      -> point B position vertically on the screen
+pixel   -> pixel info to render
+*/
+void RR_BlitLine(RR_Window &window, int x1, int y1, int x2, int y2, RR_Pixel pixel);
+
+/*
+Draws an ellipse on the screen
+window  -> window to render to
+x[1-3]  -> point positions horizontaly on the screen
+y[1-3]  -> point positions vertically on the screen
+pixel   -> pixel info to render
+*/
+void RR_BlitTriangle(RR_Window &window, int x1, int y1, int x2, int y2, int x3, int y3, RR_Pixel pixel);
+
 
 /*
 Clears the screen to a set pixel

@@ -38,28 +38,6 @@
 
 #include <RR_Headers.h>
 
-typedef uint32_t RR_Color; // Uses ARGB format: 0xAARRGGBB
-
-typedef struct RR_Pixel_t {
-    RR_Color rgba;  // Color to be displayed
-    uint32_t depth = 0; // Depth of pixel
-}RR_Pixel;
-
-typedef struct RR_Window_t {
-    int win_width;    // Width of the window
-    int win_height;   // Height of the window
-    int screen_width; // Width of the pixel screen
-    int screen_height;// Height of the pixel screen
-    float pixel_width;  // Width of pixels
-    float pixel_height; // Height of pixels
-    bool keep_aspect; // Keep the aspect ratio of the screen
-    RR_Color overscan_color; // Color to display when the 
-                             // screen is smaller than the window
-    std::vector<RR_Pixel> screen_pixels; // List of pixels to be displayed
-
-    std::string window_name; // Name of the window
-    int window_index; // Index into the window handler
-}RR_Window;
 
 typedef struct RR_Image_t {
     int width; // Width of the image
@@ -67,37 +45,11 @@ typedef struct RR_Image_t {
     std::vector<RR_Pixel> pixels; // List of pixels to be displayed
 }RR_Image;
 
-/*
-Returns a new window
-==Please note only one window is allowed right now==
-name          -> Name of the window
-screen_width  -> Width of the pixel screen
-screen_height -> Height of the pixel screen
-pixel_res_x   -> Width of the pixels rendered
-pixel_res_y   -> Height of the pixels rendered
-*/
-RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height, float pixel_res_x, float pixel_res_y, uint32_t flags = 0);
+typedef struct RR_Position2D_t {
+    float x;
+    float y;
+}RR_Position2D;
 
-// window   ->   Refrence to window to be destroyed
-void RR_DestroyWindow(RR_Window &window);
-
-// Destroys all windows (should not be called by user)
-void RR_DestroyWindows();
-
-// Updates the window and checks window events 
-// window   ->   Refrence to window to be rastered
-void RR_UpdateWindow(RR_Window &window);
-
-// Renders the graphics to the window
-// window   ->   Refrence to window to be rastered
-void RR_RasterWindow(RR_Window &window);
-
-
-// Returns the current Frames Per Second of the window
-uint32_t RR_GetFPS();
-
-// Sets the maximum fps
-void RR_SetMaxFPS(uint32_t maxfps);
 
 /*
 r -> Red value
@@ -106,6 +58,22 @@ b -> Blue value
 a -> Alpha value (optional, default 255)
 */
 uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a = 0xFF);
+
+/*
+Changes the overscan color
+window -> window to change color
+pixel  -> pixel with color data
+*/
+void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel);
+
+/*
+Sets a pixel value on the screen
+window -> window to change pixel on
+x      -> horizontal position of pixel
+y      -> vertical position of pixel
+pixel  -> pixel data to plot
+*/
+void RR_Plot(RR_Window &window, int x, int y, RR_Pixel pixel);
 
 /*
 Draws a rectangle on the screen
@@ -117,6 +85,17 @@ h       -> height of rectangle
 pixel   -> pixel info to render
 */
 void RR_BlitRect(RR_Window &window, int x, int y, int w, int h, RR_Pixel pixel);
+
+/*
+Draws a box on the screen
+window  -> window to render to
+x       -> position horizontaly on the screen
+y       -> position vertically on the screen
+w       -> width of rectangle
+h       -> height of rectangle
+pixel   -> pixel info to render
+*/
+void RR_BlitBox(RR_Window &window, int x, int y, int w, int h, RR_Pixel pixel);
 
 /*
 Draws an ellipse on the screen

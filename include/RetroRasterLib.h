@@ -40,6 +40,9 @@
 #define RR_VER_STRING "RR_v.0.0.1"
 
 #include <RR_Headers.h>
+typedef struct RR_Window_t RR_Window;
+#include <RR_Input.h>
+#include <RR_Window.h>
 #include <RR_Graphics.h>
 #include <RR_Logger.h>
 

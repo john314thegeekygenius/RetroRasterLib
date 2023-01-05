@@ -89,3 +89,13 @@ bool RR_HasQuit(){
 void RR_FixFlags(){
 	rr_quitFlag = false;
 };
+
+
+uint32_t RR_SwapByteOrder(uint32_t b){
+    return ((b&0xFF)<<24) | (((b>>8)&0xFF)<<16) | (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
+};
+
+uint16_t RR_SwapByteOrder(uint16_t b){
+    return (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
+};
+

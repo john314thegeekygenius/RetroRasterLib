@@ -18,7 +18,7 @@ BIN_DIR := bin
 STATIC_RRLIB_FLAGS := -L$(LIB_DIR)/static -l:$(LIB_NAME).a
 SHARED_RRLIB_FLAGS := -L$(LIB_DIR)/static -l:$(LIB_NAME).a
 
-OBJ_FILES := $(OBJ_DIR)/RR_Lib.o $(OBJ_DIR)/RR_Logger.o $(OBJ_DIR)/RR_Graphics.o 
+OBJ_FILES := $(OBJ_DIR)/RR_Lib.o $(OBJ_DIR)/RR_Logger.o $(OBJ_DIR)/RR_Graphics.o $(OBJ_DIR)/RR_Window.o 
 
 all: dirs clean build_lib build_tests
 
@@ -32,6 +32,7 @@ dirs:
 build_lib:
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Logger.cpp -o $(OBJ_DIR)/RR_Logger.o $(CXX_LIBS)
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Graphics.cpp -o $(OBJ_DIR)/RR_Graphics.o $(CXX_LIBS)
+	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Window.cpp -o $(OBJ_DIR)/RR_Window.o $(CXX_LIBS)
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Lib.cpp -o $(OBJ_DIR)/RR_Lib.o $(CXX_LIBS)
 	ar rcs $(LIB_DIR)/static/$(LIB_NAME).a $(OBJ_FILES)
 build_tests:
@@ -39,6 +40,8 @@ build_tests:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/test_shapes $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_image.cpp -o $(BIN_DIR)/tests/test_image $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/tests/test_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_keyboard.cpp -o $(BIN_DIR)/tests/test_keyboard $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_mouse.cpp -o $(BIN_DIR)/tests/test_mouse $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 
 clean:
 	rm -f $(BIN_DIR)/test/test_*

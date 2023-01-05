@@ -2,6 +2,7 @@ Add more window control
 -- Set fullscreen
 -- Set window resizeable
 -- Set window aspect correction
+-- Change overscan color
 -- Change window title
 -- Change window icon
 

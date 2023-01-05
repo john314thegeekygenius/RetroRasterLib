@@ -1,0 +1,23 @@
+Add more window control
+-- Set fullscreen
+-- Set window resizeable
+-- Set window aspect correction
+-- Change window title
+-- Change window icon
+
+Add more image formats
+-- Load PCX
+-- Load TGA
+-- Load ICO
+-- Load GIF (multiple frames???)
+-- Load SVG ???
+-- Load RAW
+-- Load RRI 
+
+Add input support
+-- Keyboard
+-- Mouse
+-- Joystick / Controler
+-- Touch ???
+
+Make RetroBlasterLib for audio

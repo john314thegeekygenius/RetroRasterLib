@@ -50,6 +50,11 @@ void RR_InitLibrary(void) {
 		return;
 	}
 	RR_WriteLog("[Init] Loaded SDL2 sucessfully!");
+	if (SDL_BYTEORDER == SDL_BIG_ENDIAN){
+	RR_WriteLog("[Init] Using Big Endian format");		
+	}else{
+	RR_WriteLog("[Init] Using Little Endian format");
+	}
 	RR_WriteLog("[Init] Done");
 	// Fix any flags
 	RR_FixFlags();

@@ -25,7 +25,6 @@
 
 #include <RetroRasterLib.h>
 
-
 int main(int argc, char *args[]){
 
     // Setup the library
@@ -73,6 +72,10 @@ int main(int argc, char *args[]){
         // Render the scene
         RR_RasterWindow(local_window);
     }
+
+    // Write the last frame to a file
+    RR_WriteScreenToFile(local_window, "test_result.png",1 ,1);
+    RR_WriteScreenToFile(local_window, "test_result_05.png",0.5 ,0.5);
 
     // Shutdown the library
     RR_DestroyLibrary();

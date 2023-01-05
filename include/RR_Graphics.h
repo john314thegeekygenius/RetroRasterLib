@@ -61,6 +61,12 @@ typedef struct RR_Window_t {
     int window_index; // Index into the window handler
 }RR_Window;
 
+typedef struct RR_Image_t {
+    int width; // Width of the image
+    int height; // Height of the image
+    std::vector<RR_Pixel> pixels; // List of pixels to be displayed
+}RR_Image;
+
 /*
 Returns a new window
 ==Please note only one window is allowed right now==
@@ -151,3 +157,27 @@ window -> window to clear screen of
 pixel  -> pixel data to clear with
 */
 void RR_ClearScreen(RR_Window &window, RR_Pixel pixel);
+
+/*
+Writes the current pixel buffer to a PNG file scaled
+window -> window to get pixels from
+f_name -> name of image to be opened (valid are bmp, png, jpg/jpeg, raw, rri)
+sw     -> horizontal scale factor
+sh     -> vertical scale factor
+*/
+void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw = 1, float sh = 1);
+
+/*
+Opens and loads an image
+window -> window for pixel format
+f_name -> name of image to be opened (valid are bmp, png, jpg/jpeg, raw, rri)
+*/
+RR_Image RR_LoadImage(RR_Window &window, std::string f_name);
+
+/*
+Draws an image on the screen
+x  -> horizontal position on the screen
+y  -> vertical position on the screen
+*/
+void RR_BlitImage(RR_Window &window, RR_Image &image, int x, int y, float sw = 1, float sh = 1);
+

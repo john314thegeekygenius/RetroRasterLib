@@ -1,5 +1,5 @@
 # Retro Raster Lib
-![Library logo](logo256.png)
+![Library logo](logo256.png)<br>
 -- Current Version 0.0.1 --
 ### Features
 - Pixel based graphics

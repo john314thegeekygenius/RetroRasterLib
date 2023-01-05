@@ -2,7 +2,7 @@
 LIB_NAME := libRRasterLib
 
 CXX_FLAGS := -Wall -O3 -std=c++20 -Iinclude -I/usr/include/SDL2
-CXX_LIBS := -lSDL2main -lSDL2 
+CXX_LIBS := -lSDL2main -lSDL2 -lSDL2_image -lpng
 
 # Where the source code is
 SRC_DIR := src
@@ -37,6 +37,7 @@ build_lib:
 build_tests:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_log.cpp -o $(BIN_DIR)/tests/test_log $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/test_shapes $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_image.cpp -o $(BIN_DIR)/tests/test_image $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/tests/test_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 
 clean:

@@ -37,6 +37,7 @@
 
 #include <RetroRasterLib.h>
 #include "RR_Window.h"
+#include "RR_Graphics.h"
 
 std::vector<SDL_WindowInfo> SDL_Windows;
 
@@ -128,12 +129,17 @@ void RR_WipeSDLWindow(SDL_WindowInfo &info){
     }
 };
 
-void RR_DestroyWindow(RR_Window &window){
+bool RR_CheckWindow(RR_Window &window){
     if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
         RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
         RR_ForceQuit();
-        return;
+        return true;
     }
+    return false;
+};
+
+void RR_DestroyWindow(RR_Window &window){
+    if(RR_CheckWindow(window)) return;
     RR_WipeSDLWindow(SDL_Windows.at(window.window_index));
     // Remove it from the list
     SDL_Windows.erase(SDL_Windows.begin()+window.window_index);
@@ -159,11 +165,7 @@ void RR_UpdateWindow(RR_Window &window){
     g_RR_InputNextRead = SDL_GetTicks64() + 100; // Add some input delay
 */
 //  if (SDL_WaitEventTimeout(&event, 10)) {
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_WindowInfo &sdl_window = SDL_Windows.at(window.window_index);
 
     uint64_t pollEndTick = SDL_GetTicks64() + 1000; // If events are happening over 1 second, uh...
@@ -205,11 +207,7 @@ void RR_UpdateWindow(RR_Window &window){
 };
 
 void RR_RasterWindow(RR_Window &window){
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_WindowInfo &sdl_window = SDL_Windows.at(window.window_index);
 
     // Draw the overscan directly to the surface
@@ -293,7 +291,11 @@ void RR_SetMaxFPS(uint32_t maxfps){
 };
 
 uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a){
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	return (r<<24)|(g<<16)|(b<<8)|a;
+#else
 	return (a<<24)|(r<<16)|(g<<8)|b;
+#endif
 };
 
 // Primitives
@@ -434,3 +436,185 @@ void RR_ClearScreen(RR_Window &window, RR_Pixel pixel){
         window.screen_pixels.at(i) = pixel;
     }
 };
+
+void RR_BlitImage(RR_Window &window, RR_Image &image, int x, int y, float sw, float sh){
+    // Blit the image to screen
+    int sx = 0;
+    int sy = 0;
+    int dy = 0;
+    int dx = 0;
+    for(int by = 0; by < image.height*sh; by++){
+        dy = y + by;
+        sy = (by/sh);
+        for(int bx = 0; bx < image.width*sw; bx++){
+            sx = (bx/sw);
+            dx = x + bx;
+            if(dx < 0 || dy < 0 || dy >= window.screen_height || dx >= window.screen_width)
+                continue;
+            if(image.pixels.at((sy*image.width)+sx).rgba>>24){
+                window.screen_pixels.at((dy*window.screen_width) + dx) = image.pixels.at((sy*image.width)+sx);
+            }
+        }
+    }
+};
+
+
+// Graphics formats
+
+void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw, float sh){
+    // Figure out what the image format is
+    std::string ext;
+    if(f_name.length() < 3){
+        RR_WriteLog("Warn! Could not deduce format to write screen to - assuming PNG");
+        ext = "png";
+    }else{
+        ext = f_name.substr(f_name.length()-3,3);
+    }
+    // Make sure it's all lowercase
+    for(char &c : ext){ c = tolower(c); }
+    if(ext.compare("bmp")==0){
+        RR_WriteLog("Writing to BMP file: " + f_name);
+        SDL_SaveBMP(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str());
+        return;
+    }
+    if(ext.compare("png")==0){
+        RR_WriteLog("Writing to PNG file: " + f_name);
+        IMG_SavePNG(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str());
+        return;
+    }
+    if(ext.compare("jpg")==0 || ext.compare("peg")==0){
+        RR_WriteLog("Writing to JPEG file: " + f_name);
+        IMG_SaveJPG(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str(),100);
+        return;
+    }
+    if(ext.compare("raw")==0){
+        RR_WriteLog("Writing to RAW file: " + f_name);
+        // TODO:
+        // Make this write the raw pixel values to a FILE
+        return;
+    }
+    if(ext.compare("rri")==0){
+        RR_WriteLog("Writing to RRI file: " + f_name);
+        // TODO:
+        // Make this write the pixels to a RetroRasterImage file
+        return;
+    }
+    RR_WriteLog("Error! Invalid format! Not writing image!");
+};
+
+uint32_t RR_SwapByteOrder(uint32_t b){
+    return ((b&0xFF)<<24) | (((b>>8)&0xFF)<<16) | (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
+};
+uint16_t RR_SwapByteOrder(uint16_t b){
+    return (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
+};
+
+uint32_t RR_FixPixel(uint32_t p, const SDL_PixelFormat *format){
+    uint8_t r = p>>format->Rshift;
+    uint8_t g = p>>format->Gshift;
+    uint8_t b = p>>format->Bshift;
+    uint8_t a = p>>format->Ashift;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+	return (r<<24)|(g<<16)|(b<<8)|a;
+#else
+	return (a<<24)|(r<<16)|(g<<8)|b;
+#endif
+};
+
+RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
+    // Image we will return
+    RR_Image temp_img;
+
+    // Clear the image first
+    temp_img.width = 0;
+    temp_img.height = 0;
+    temp_img.pixels.clear();
+
+    // Figure out what the image format is
+    std::string ext;
+    if(f_name.length() < 3){
+        RR_WriteLog("Warn! Could not deduce format to write screen to - assuming PNG");
+        ext = "png";
+    }else{
+        ext = f_name.substr(f_name.length()-3,3);
+    }
+    // Make sure it's all lowercase
+    for(char &c : ext){ c = tolower(c); }
+
+    SDL_Surface *temp_surface = NULL;
+    bool LoadSDL = false;
+
+    if(ext.compare("bmp")==0){
+        RR_WriteLog("Reading BMP file: " + f_name);
+        temp_surface = SDL_LoadBMP_RW(SDL_RWFromFile(f_name.c_str(), "rb"), 1);
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("png")==0){
+        RR_WriteLog("Reading PNG file: " + f_name);
+        temp_surface = IMG_LoadPNG_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("jpg")==0 || ext.compare("peg")==0){
+        RR_WriteLog("Reading JPEG file: " + f_name);
+        temp_surface = IMG_LoadJPG_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(LoadSDL){
+        // Fix the surface
+        SDL_Surface* formatted_surface = SDL_ConvertSurfaceFormat(temp_surface, SDL_PIXELFORMAT_ARGB8888, 0);
+        if(formatted_surface == NULL){
+            RR_WriteLog("Error formating surface! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        SDL_FreeSurface(temp_surface);
+        temp_surface = NULL;
+        // Get the image size
+        temp_img.width = formatted_surface->w;
+        temp_img.height = formatted_surface->h;
+        RR_WriteLog("Image size: "+std::to_string(temp_img.width)+"x"+std::to_string(temp_img.height));
+        temp_img.pixels.resize(temp_img.width*temp_img.height);
+        SDL_LockSurface(formatted_surface);
+        // Copy the pixels over
+        uint32_t *surfacePixels = (uint32_t *)formatted_surface->pixels;
+        for(int y = 0; y < temp_img.height; y++){
+            for(int x = 0; x < temp_img.width; x++){
+                temp_img.pixels.at((y*temp_img.width)+x).rgba = surfacePixels[(y*formatted_surface->w)+x];
+                temp_img.pixels.at((y*temp_img.width)+x).depth = 0;
+            }
+        }
+        RR_WriteLog("Freeing surface...");
+        SDL_UnlockSurface(formatted_surface);
+        SDL_FreeSurface(formatted_surface);
+        formatted_surface = NULL;
+        return temp_img;
+    }
+    if(ext.compare("raw")==0){
+        RR_WriteLog("Reading RAW file: " + f_name);
+        RR_WriteLog("Warn! Size can not be determined from a RAW file!");
+        RR_WriteLog("Image size will be set to 0");
+        // TODO:
+        // Make this read the raw pixel values to a FILE
+        return temp_img;
+    }
+    if(ext.compare("rri")==0){
+        RR_WriteLog("Reading RRI file: " + f_name);
+        // TODO:
+        // Make this read the pixels of a RetroRasterImage file
+        return temp_img;
+    }
+    RR_WriteLog("Error! Invalid format! Not reading image!");
+    return temp_img;
+};
+

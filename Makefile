@@ -55,6 +55,7 @@ tests_static:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/tests/static/test_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_keyboard.cpp -o $(BIN_DIR)/tests/static/test_keyboard $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_mouse.cpp -o $(BIN_DIR)/tests/static/test_mouse $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_multi_window.cpp -o $(BIN_DIR)/tests/static/test_multi_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 tests_shared:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_log.cpp -o $(BIN_DIR)/tests/shared/test_log $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/shared/test_shapes $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
@@ -62,6 +63,7 @@ tests_shared:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_window.cpp -o $(BIN_DIR)/tests/shared/test_window $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_keyboard.cpp -o $(BIN_DIR)/tests/shared/test_keyboard $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_mouse.cpp -o $(BIN_DIR)/tests/shared/test_mouse $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_multi_window.cpp -o $(BIN_DIR)/tests/shared/test_multi_window $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 
 clean:
 	rm -f $(BIN_DIR)/test/shared/test_*

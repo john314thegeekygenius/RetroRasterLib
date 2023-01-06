@@ -49,7 +49,6 @@ typedef struct SDL_WindowInfo_t {
 	SDL_Window *window_ptr = NULL;
 	SDL_Surface *window_surface = NULL;
     SDL_Surface *screen_surface = NULL;
-	SDL_Event window_events;
 }SDL_WindowInfo;
 
 typedef struct RR_Window_t {
@@ -66,6 +65,7 @@ typedef struct RR_Window_t {
 
     std::string window_name; // Name of the window
     int window_index; // Index into the window handler
+    bool window_closed; // Is the window closed
 
 	bool keycodes[256] = {false}; // List of keycodes
 	RR_Mouse window_mouse; // Mouse info
@@ -88,6 +88,9 @@ void RR_DestroyWindow(RR_Window &window);
 
 // Destroys all windows (should not be called by user)
 void RR_DestroyWindows();
+
+// Returns if the window specified was closed (should be checked before using window)
+bool RR_CheckWindowClosed(RR_Window &window);
 
 /*
 Set the window title

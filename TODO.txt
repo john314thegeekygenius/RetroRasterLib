@@ -1,9 +1,5 @@
 Add more image formats
 -- Load GIF w/ multiple frames???)
--- Load RAW
--- Load RRI 
-
-Add filled triangle rendering
 
 Add effects
 -- Bloom

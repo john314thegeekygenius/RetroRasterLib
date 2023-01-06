@@ -49,6 +49,14 @@ typedef struct RR_Position2D_t {
     float y;
 }RR_Position2D;
 
+typedef struct RR_RRIHeader_t {
+	char hash[3];
+	uint32_t width;
+	uint32_t height;
+	uint32_t name_len;
+	std::string name_string;
+}RR_RRIHeader;
+
 
 /*
 r -> Red value

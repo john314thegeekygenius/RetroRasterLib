@@ -50,6 +50,16 @@ uint32_t g_RR_FPS = 0;
 uint32_t g_RR_MaxFPS = 144; // 144hz
 uint64_t g_RR_InputNextRead = 0;
 
+// Pulled from RR_Lib.cpp
+extern bool RR_GlobalKeyPresses[256];
+extern RR_Mouse RR_GlobalMouse;
+extern int RR_GlobalWindowSelected;
+extern int RR_GlobalResizeWindow;
+extern int RR_GlobalCloseWindow;
+extern int RR_GlobalNewWindowWidth;
+extern int RR_GlobalNewWindowHeight;
+extern int OS_GlobalMouseX;
+extern int OS_GlobalMouseY;
 
 RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height, float pixel_res_x, float pixel_res_y, uint32_t flags){
 	RR_Window local_window;
@@ -70,7 +80,7 @@ RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height,
 
     uint32_t SDL_winFlags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
 
-    if(!SDL_Windows.size()){
+    //if(!SDL_Windows.size()){
     	temp_sdl_window.window_ptr = SDL_CreateWindow(local_window.window_name.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, local_window.win_width, local_window.win_height, SDL_winFlags );
 
         // Make sure it was made
@@ -106,19 +116,27 @@ RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height,
             RR_ForceQuit();
             return local_window;   
         }
-        
+
+        // Find the first window and fix the selected window variable
+        if(RR_GlobalWindowSelected == -1){
+            RR_GlobalWindowSelected = SDL_GetWindowID(temp_sdl_window.window_ptr);
+        }
+
         SDL_Windows.push_back(temp_sdl_window);
-    }else{
+
+        local_window.window_closed = false;
+    /*}else{
         RR_WriteLog("Warn! Failed to create new window!");
         RR_WriteLog("Window support is currently limited to one window!");
         return local_window;
 
-    }
+    }*/
 
     return local_window;
 };
 
 void RR_WipeSDLWindow(SDL_WindowInfo &info){
+    RR_WriteLog("Destroyed SDL Window!");
     if(info.screen_surface != NULL){
         SDL_FreeSurface(info.screen_surface);
         info.screen_surface = NULL;
@@ -130,6 +148,11 @@ void RR_WipeSDLWindow(SDL_WindowInfo &info){
 };
 
 bool RR_CheckWindow(RR_Window &window){
+    if(window.window_closed){
+        RR_WriteLog("Error! Window was closed! Please handle this properly!");
+        RR_ForceQuit();
+        return true;
+    }
     if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
         RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
         RR_ForceQuit();
@@ -138,11 +161,18 @@ bool RR_CheckWindow(RR_Window &window){
     return false;
 };
 
+bool RR_CheckWindowClosed(RR_Window &window){
+    return window.window_closed;
+};
+
 void RR_DestroyWindow(RR_Window &window){
+    if(RR_CheckWindowClosed(window)) return; // Nothing to do (We hope)
     if(RR_CheckWindow(window)) return;
     RR_WipeSDLWindow(SDL_Windows.at(window.window_index));
-    // Remove it from the list
-    SDL_Windows.erase(SDL_Windows.begin()+window.window_index);
+    // Remove it from the list (BUG)
+    //SDL_Windows.erase(SDL_Windows.begin()+window.window_index);
+    // Tell the window it can't be used now
+    window.window_closed = true;
 };
 
 
@@ -155,20 +185,12 @@ void RR_DestroyWindows(){
 };
 
 void RR_SetWindowTitle(RR_Window &window, std::string title){
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_SetWindowTitle(SDL_Windows.at(window.window_index).window_ptr, title.c_str());
 };
 
 void RR_SetWindowIcon(RR_Window &window, RR_Image &icon_img){
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_Surface *icon_surface = NULL;
     icon_surface = SDL_CreateRGBSurfaceWithFormat(0, icon_img.width, icon_img.height, 32, SDL_PIXELFORMAT_ABGR8888);
     if(icon_surface == NULL){
@@ -188,20 +210,12 @@ void RR_SetWindowIcon(RR_Window &window, RR_Image &icon_img){
 };
 
 void RR_SetWindowFullscreen(RR_Window &window, bool set_flag){
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_SetWindowFullscreen( SDL_Windows.at(window.window_index).window_ptr, (SDL_bool)set_flag );
 };
 
 void RR_SetWindowResizeable(RR_Window &window, bool set_flag){
-    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
-        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
-        RR_ForceQuit();
-        return;
-    }
+    if(RR_CheckWindow(window)) return;
     SDL_SetWindowResizable( SDL_Windows.at(window.window_index).window_ptr, (SDL_bool)set_flag );
 };
 
@@ -213,97 +227,64 @@ void RR_SetAspectRatio(RR_Window &window, bool set_flag){
     window.keep_aspect = set_flag;
 };
 
-void RR_UpdateWindow(RR_Window &window){
-    /*if(SDL_GetTicks64() < g_RR_InputNextRead){
-        return;
-    }
 
-    g_RR_InputNextRead = SDL_GetTicks64() + 100; // Add some input delay
-*/
-//  if (SDL_WaitEventTimeout(&event, 10)) {
+void RR_UpdateWindow(RR_Window &window){
+    if(RR_CheckWindowClosed(window)) return;
     if(RR_CheckWindow(window)) return;
     SDL_WindowInfo &sdl_window = SDL_Windows.at(window.window_index);
 
-    uint64_t pollEndTick = SDL_GetTicks64() + 1000; // If events are happening over 1 second, uh...
+    // Get the current SDL window id
+    int local_win_id = SDL_GetWindowID(sdl_window.window_ptr);
 
-    uint32_t sdl_key;
-    int button_id;
+    // Close the window if needed
+    if(RR_GlobalCloseWindow == local_win_id){
+        RR_WriteLog("Info: Closed window.");
+        RR_DestroyWindow(window);
+        RR_GlobalCloseWindow = -1;
+        return;
+    }
 
     // Update the mouse buttons
     for(int i = 0; i < RR_MAX_MOUSE_BUTTONS; i++)
         window.window_mouse.buttons[i].last_state = window.window_mouse.buttons[i].cur_state;  
 
-    while( SDL_PollEvent( &sdl_window.window_events ) != 0 ){
-        if(SDL_GetTicks64() >= pollEndTick) break;
-		//User requests quit
-		switch(sdl_window.window_events.type){
-            case SDL_QUIT:
-    			RR_Quit();
-                break;
-            case SDL_KEYDOWN:
-                // Convert SDL2 Keycodes to RRL Keycodes
-                sdl_key = (uint32_t)sdl_window.window_events.key.keysym.sym;
-                for(int i = 0; i < 256; i++){
-                    if(SDL_KeyMapper[i] == sdl_key){
-                        window.keycodes[i] = true;
-                    }
-                }
-                break;
-            case SDL_KEYUP:
-                // Convert SDL2 Keycodes to RRL Keycodes
-                sdl_key = (uint32_t)sdl_window.window_events.key.keysym.sym;
-                for(int i = 0; i < 256; i++){
-                    if(SDL_KeyMapper[i] == sdl_key){
-                        window.keycodes[i] = false;
-                    }
-                }
-                break;
-            case SDL_MOUSEMOTION:
-                // Get the mouse position
-                SDL_GetMouseState(&window.window_mouse.real_x, &window.window_mouse.real_y);
-                window.window_mouse.x = window.window_mouse.real_x / window.pixel_width;
-                window.window_mouse.y = window.window_mouse.real_y / window.pixel_height;
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-                // Get the mouse position
-                SDL_GetMouseState(&window.window_mouse.real_x, &window.window_mouse.real_y);
-                window.window_mouse.x = window.window_mouse.real_x / window.pixel_width;
-                window.window_mouse.y = window.window_mouse.real_y / window.pixel_height;
-                // Get mouse buttons
-                button_id = sdl_window.window_events.button.button-1;
-                window.window_mouse.buttons[button_id].clicks = sdl_window.window_events.button.clicks;
-                window.window_mouse.buttons[button_id].cur_state = sdl_window.window_events.button.state;
-                window.window_mouse.buttons[button_id].x = sdl_window.window_events.button.x;
-                window.window_mouse.buttons[button_id].y = sdl_window.window_events.button.y;
-                break;
-            case SDL_MOUSEWHEEL:
-                window.window_mouse.wheel_x = sdl_window.window_events.wheel.x;
-                window.window_mouse.wheel_y = sdl_window.window_events.wheel.y;
-                window.window_mouse.wheel_dir = sdl_window.window_events.wheel.direction;
-                break;
-            case SDL_WINDOWEVENT:
-                switch (sdl_window.window_events.window.event) {
-                    case SDL_WINDOWEVENT_RESIZED:
-                    case SDL_WINDOWEVENT_SIZE_CHANGED:
-                        window.win_width = sdl_window.window_events.window.data1;
-                        window.win_height = sdl_window.window_events.window.data2;
-                        // Update the window surface
-                        SDL_Windows.at(window.window_index).window_surface = SDL_GetWindowSurface(SDL_Windows.at(window.window_index).window_ptr);
-                        if(SDL_Windows.at(window.window_index).window_surface == NULL){
-                            RR_WriteLog("Error! Window surface could not be updated! SDL_Error: " + std::string(SDL_GetError()) );
-                            RR_ForceQuit();
-                        }
-                        break;
-                        // ???
-//                    case SDL_WINDOWEVENT_CLOSE:
-//                        RR_Quit();
-//                    break;
-                }
-                break;
+    if(RR_GlobalWindowSelected == local_win_id){
+        if(RR_GlobalMouse.window_id == local_win_id){
+            // Update the mouse
+            window.window_mouse = RR_GlobalMouse;
+            /*
+            int win_x, win_y;
+            SDL_GetWindowPosition(sdl_window.window_ptr, &win_x, &win_y);
+
+            window.window_mouse.real_x = OS_GlobalMouseX - win_x;
+            window.window_mouse.real_y = OS_GlobalMouseY - win_y;
+            */
+            
+            window.window_mouse.x = window.window_mouse.real_x / window.pixel_width;
+            window.window_mouse.y = window.window_mouse.real_y / window.pixel_height;
         }
+
+        // Update the keys
+        for(int i = 0; i < 256; i++)
+            window.keycodes[i] = RR_GlobalKeyPresses[i];
+    }else{
+        // Clear all the keys
+        for(int i = 0; i < 256; i++)
+            window.keycodes[i] = 0;
     }
 
+    // Update the window surface if needed
+    if(RR_GlobalResizeWindow == local_win_id){
+        window.win_width = RR_GlobalNewWindowWidth;
+        window.win_height = RR_GlobalNewWindowHeight;
+        // Update the window surface
+        sdl_window.window_surface = SDL_GetWindowSurface(sdl_window.window_ptr);
+        if(sdl_window.window_surface == NULL){
+            RR_WriteLog("Error! Window surface could not be updated! SDL_Error: " + std::string(SDL_GetError()) );
+            RR_ForceQuit();
+        }
+        RR_GlobalResizeWindow = -1;
+    }
 };
 
 void RR_RasterWindow(RR_Window &window){

@@ -307,7 +307,8 @@ typedef struct RR_Mouse_t {
 	RR_MButton buttons[RR_MAX_MOUSE_BUTTONS]; // Button states
 	int wheel_x; // distance scrolled horizontally -left +right
 	int wheel_y; // distance scrolled vertically -down +up
-	int wheel_dir;
+	int wheel_dir; // direction wheel is scrolled
+	int window_id; // window id
 }RR_Mouse;
 
 RR_Mouse RR_GetMouse(RR_Window &window);
@@ -318,5 +319,9 @@ int RR_GetMouseRealY(RR_Window &window);
 int RR_GetMouseWheelX(RR_Window &window);
 int RR_GetMouseWheelY(RR_Window &window);
 RR_MButton RR_GetMouseButton(RR_Window &window, int id);
+
+typedef struct RR_Controler_t {
+
+}RR_Controler;
 
 

@@ -37,8 +37,9 @@ int main(int argc, char *args[]){
     // Wait for the user to quit
     while(!RR_HasQuit()){
         // Get inputs
+        RR_UpdateInput();
         RR_UpdateWindow(local_window);
-
+        if(RR_CheckWindowClosed(local_window)){ break; }
 
         // Create a clear pixel (blue)
         RR_Pixel clear_pixel = { RR_RGBA(0,0,255), 0};

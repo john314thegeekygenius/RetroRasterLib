@@ -40,6 +40,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <fstream>
 
 #include <SDL.h>
 #include <SDL_image.h>

@@ -42,7 +42,9 @@ int main(int argc, char *args[]){
     // Wait for the user to quit
     while(!RR_HasQuit()){
         // Get inputs
+        RR_UpdateInput();
         RR_UpdateWindow(local_window);
+        if(RR_CheckWindowClosed(local_window)){ break; }
 
         // Check for arrow keys
         if(RR_GetKey(local_window, RRK_LEFT)){

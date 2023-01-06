@@ -661,18 +661,36 @@ RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
         formatted_surface = NULL;
         return temp_img;
     }
-    if(ext.compare("raw")==0){
-        RR_WriteLog("Reading RAW file: " + f_name);
-        RR_WriteLog("Warn! Size can not be determined from a RAW file!");
-        RR_WriteLog("Image size will be set to 0");
-        // TODO:
-        // Make this read the raw pixel values to a FILE
-        return temp_img;
-    }
     if(ext.compare("rri")==0){
+        // Read a RetroRasterImage file
         RR_WriteLog("Reading RRI file: " + f_name);
-        // TODO:
-        // Make this read the pixels of a RetroRasterImage file
+        RR_RRIHeader header;
+        std::ifstream image_file;
+
+        image_file.open(f_name);
+        if(!image_file.is_open()){
+            RR_WriteLog("Error loading image!");
+            return temp_img;
+        }
+        // Read the header
+        image_file.read((char*)&header.hash,sizeof(char)*3);
+        image_file.read((char*)&header.width,sizeof(uint32_t));
+        image_file.read((char*)&header.height,sizeof(uint32_t));
+        image_file.read((char*)&header.name_len,sizeof(uint32_t));
+        image_file.read((char*)header.name_string.data(),sizeof(char)*header.name_len);
+        // Get the image size
+        temp_img.width = header.width;
+        temp_img.height = header.height;
+        RR_WriteLog("Image size: "+std::to_string(temp_img.width)+"x"+std::to_string(temp_img.height));
+        temp_img.pixels.resize(temp_img.width*temp_img.height);
+        // Read the pixels
+        for(int i = 0; i < temp_img.width*temp_img.height; i++){
+            uint32_t pixel_data;
+            image_file.read((char*)&pixel_data,sizeof(uint32_t));
+            temp_img.pixels.at(i).rgba = pixel_data;
+            temp_img.pixels.at(i).depth = 0;
+        }
+
         return temp_img;
     }
     RR_WriteLog("Error! Invalid format! Not reading image!");

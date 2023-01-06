@@ -7,6 +7,7 @@
 - 2D rasterizing
 ![Picture of shapes test](images/shapes_demo.png)
 - Image loading
+- Multiple windows
 
 ### Notes
  - This library is not done yet!

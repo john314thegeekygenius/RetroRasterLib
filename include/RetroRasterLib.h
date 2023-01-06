@@ -69,3 +69,5 @@ bool RR_HasQuit();
 // "Fixes" the flags (i.e. Quit flag) - Sets the flags to default values
 void RR_FixFlags();
 
+// Updates the input data - Should be run almost every frame
+void RR_UpdateInput();

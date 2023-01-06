@@ -59,6 +59,9 @@ int main(int argc, char *args[]){
             RR_BlitLine(local_window, 160, 0, i, 240, RR_Pixel(RR_RGBA((i*0.8f),255-(i*0.8f),0),0));
         }
 
+        // Draw a solid triangle
+        RR_BlitFillTriangle(local_window, 50,50,300,100,180,220, RR_Pixel(RR_RGBA(255,0,255),0));
+
         // Draw an ellipse
         RR_BlitEllipse(local_window, 160, 120, 64, 32, RR_Pixel(RR_RGBA(255,0,0),0));
 

@@ -192,8 +192,263 @@ void RR_BlitTriangle(RR_Window &window, int x1, int y1, int x2, int y2, int x3, 
 };
 
 void RR_BlitFillTriangle(RR_Window &window, int x1, int y1, int x2, int y2, int x3, int y3, RR_Pixel pixel){
+    // Originaly from: https://www.avrfreaks.net/sites/default/files/triangles.c 
+    // However it appears that this link no longer works.
+    // Code taken from OLCGameEngine: https://www.github.com/onelonecoder
+    // and tweaked because I couldn't find better triangle drawing code
     // TODO:
-    // Add triangle rendering
+    // Make this better
+    
+    int t1x, t2x, minx, maxx, t1xp, t2xp;
+    int signx1, signx2;
+    int e1, e2;
+    bool changed1 = false;
+    bool changed2 = false;
+
+    auto blitline = [&](int sx, int ex, int ny) { 
+        for (int i = sx; i <= ex; i++) 
+            RR_Plot(window, i, ny, pixel); 
+    };
+
+    // Sort vertices
+    if (y1 > y2) { 
+        std::swap(y1, y2); 
+        std::swap(x1, x2); 
+    }
+    if (y1 > y3) { 
+        std::swap(y1, y3); 
+        std::swap(x1, x3); 
+    }
+    if (y2 > y3) { 
+        std::swap(y2, y3); 
+        std::swap(x2, x3); 
+    }
+
+    t1x = t2x = x1; 
+    int y = y1;   // Starting points
+    int dx1 = (int)(x2 - x1); 
+
+    if (dx1<0) { 
+        dx1 = -dx1; // Would ^80000000 be faster??
+        signx1 = -1; 
+    } else {
+        signx1 = 1;
+    }
+    int dy1 = (int)(y2 - y1);
+    int dx2 = (int)(x3 - x1); 
+
+    signx2 = 1;
+    
+    if (dx2<0) { 
+        dx2 = -dx2; 
+        signx2 = -1; 
+    }
+    
+    int dy2 = (int)(y3 - y1);
+
+    if (dy1 > dx1) {   // swap values
+        std::swap(dx1, dy1);
+        changed1 = true;
+    }
+    if (dy2 > dx2) {   // swap values
+        std::swap(dy2, dx2);
+        changed2 = true;
+    }
+
+    e2 = (int)(dx2 >> 1);
+
+    //
+    // WARNING: MESSY CODE INCOMING!!!
+    //
+
+    // Flat top, just process the second half
+    if (y1 == y2) {
+        goto next;
+    }
+
+    e1 = (int)(dx1 >> 1);
+
+    for (int i = 0; i < dx1;) {
+        t1xp = t2xp = 0;
+        if (t1x<t2x) { 
+            minx = t1x; 
+            maxx = t2x; 
+        }else { 
+            minx = t2x; 
+            maxx = t1x; 
+        }
+        // process first line until y value is about to change
+        while (i<dx1) {
+            i++;
+            e1 += dy1;
+            while (e1 >= dx1) {
+                e1 -= dx1;
+                if (changed1) {
+                    t1xp = signx1;//t1x += signx1;
+                }else {
+                    // Skip to bottom half
+                    goto next1;
+                }
+            }
+            if (changed1) { 
+                break; 
+            }else { 
+                t1x += signx1; 
+            }
+        }
+        // Move line
+    next1:
+        // process second line until y value is about to change
+        while (1) {
+            e2 += dy2;
+            while (e2 >= dx2) {
+                e2 -= dx2;
+                if (changed2) {
+                    t2xp = signx2;//t2x += signx2;
+                }else {
+                    goto next2;
+                }
+            }
+            if (changed2) {
+                break;
+            } else {
+                t2x += signx2;
+            }
+        }
+    next2:
+        if (minx>t1x) {
+            minx = t1x;
+        }
+        if (minx>t2x) {
+            minx = t2x;
+        }
+        if (maxx<t1x) {
+            maxx = t1x; 
+        }
+        if (maxx<t2x) {
+            maxx = t2x;
+        }
+
+        // Draw line from min to max points found on the y
+        blitline(minx, maxx, y);
+
+        // Now increase y
+        if (!changed1) {
+            t1x += signx1;
+        }
+
+        t1x += t1xp;
+        if (!changed2) {
+            t2x += signx2;
+        }
+
+        t2x += t2xp;
+        y += 1;
+
+        if (y == y2) {
+            break;
+        }
+    }
+next:
+    // Second half
+    dx1 = (int)(x3 - x2); 
+    if (dx1<0) { 
+        dx1 = -dx1; 
+        signx1 = -1; 
+    } else {
+        signx1 = 1;
+    }
+
+    dy1 = (int)(y3 - y2);
+    t1x = x2;
+
+    if (dy1 > dx1) {   // swap values
+        std::swap(dy1, dx1);
+        changed1 = true;
+    }
+    else {
+        changed1 = false;
+    }
+
+    e1 = (int)(dx1 >> 1);
+
+    for (int i = 0; i <= dx1; i++) {
+        t1xp = t2xp = 0;
+        if (t1x<t2x) { 
+            minx = t1x; 
+            maxx = t2x; 
+        } else { 
+            minx = t2x; 
+            maxx = t1x; 
+        }
+        // process first line until y value is about to change
+        while (i<dx1) {
+            e1 += dy1;
+            while (e1 >= dx1) {
+                e1 -= dx1;
+                if (changed1) { 
+                    t1xp = signx1; 
+                    //t1x += signx1;
+                    break; 
+                } else {
+                    goto next3;
+                }
+            }
+            if (changed1) {
+                break;
+            } else {
+                t1x += signx1;
+            }
+            if (i<dx1) {
+                i++;
+            }
+        }
+    next3:
+        // process second line until y value is about to change
+        while (t2x != x3) {
+            e2 += dy2;
+            while (e2 >= dx2) {
+                e2 -= dx2;
+                if (changed2) {
+                    t2xp = signx2;
+                } else {
+                    goto next4;
+                }
+            }
+            if (changed2) {
+                break;
+            } else {
+                t2x += signx2;
+            }
+        }
+    next4:
+        if (minx>t1x) {
+            minx = t1x;
+        }
+        if (minx>t2x) {
+            minx = t2x;
+        }
+        if (maxx<t1x) {
+            maxx = t1x; 
+        }
+        if (maxx<t2x) {
+            maxx = t2x;
+        }
+        // Draw line from min to max points found on the y
+        blitline(minx, maxx, y); 
+        if (!changed1) {
+            t1x += signx1;
+        }
+        t1x += t1xp;
+        if (!changed2) {
+            t2x += signx2;
+        }
+        t2x += t2xp;
+        y += 1;
+        if (y>y3) {
+            return;
+        }
+    }
 };
 
 void RR_ClearScreen(RR_Window &window, RR_Pixel pixel){

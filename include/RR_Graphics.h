@@ -113,7 +113,7 @@ pixel   -> pixel info to render
 void RR_BlitLine(RR_Window &window, int x1, int y1, int x2, int y2, RR_Pixel pixel);
 
 /*
-Draws an ellipse on the screen
+Draws a trianlge on the screen
 window  -> window to render to
 x[1-3]  -> point positions horizontaly on the screen
 y[1-3]  -> point positions vertically on the screen
@@ -121,6 +121,15 @@ pixel   -> pixel info to render
 */
 void RR_BlitTriangle(RR_Window &window, int x1, int y1, int x2, int y2, int x3, int y3, RR_Pixel pixel);
 
+
+/*
+Draws a filled trianlge on the screen
+window  -> window to render to
+x[1-3]  -> point positions horizontaly on the screen
+y[1-3]  -> point positions vertically on the screen
+pixel   -> pixel info to render
+*/
+void RR_BlitFillTriangle(RR_Window &window, int x1, int y1, int x2, int y2, int x3, int y3, RR_Pixel pixel);
 
 /*
 Clears the screen to a set pixel

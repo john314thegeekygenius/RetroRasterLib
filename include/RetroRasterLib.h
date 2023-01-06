@@ -37,7 +37,7 @@
 
 #pragma once
 
-#define RR_VER_STRING "RR_v.0.0.1"
+#define RR_VER_STRING "RR_v.0.0.2-alpha"
 
 typedef struct RR_Window_t RR_Window;
 typedef struct RR_Image_t RR_Image;

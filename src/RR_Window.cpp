@@ -154,7 +154,53 @@ void RR_DestroyWindows(){
     SDL_Windows.clear();
 };
 
-//SDL_SetWindowFullscreen( mWindow, SDL_FALSE );
+void RR_SetWindowTitle(RR_Window &window, std::string title){
+    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
+        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
+        RR_ForceQuit();
+        return;
+    }
+    SDL_SetWindowTitle(SDL_Windows.at(window.window_index).window_ptr, title.c_str());
+};
+
+void RR_SetWindowIcon(RR_Window &window, RR_Image &icon_img){
+    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
+        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
+        RR_ForceQuit();
+        return;
+    }
+    SDL_Surface *icon_surface = NULL;
+    icon_surface = SDL_CreateRGBSurfaceWithFormat(0, icon_img.width, icon_img.height, 32, SDL_PIXELFORMAT_ABGR8888);
+    if(icon_surface == NULL){
+        RR_WriteLog("Warn! Could not create SDL Surface for Icon! SDL_Error: "+std::string(SDL_GetError()));
+        return;
+    }
+    SDL_LockSurface(icon_surface);
+    // Copy pixels over
+    uint32_t *surfacePixels = (uint32_t *)icon_surface->pixels;
+    for(int y = 0; y < icon_img.height; y++){
+        for(int x = 0; x < icon_img.width; x++){
+            surfacePixels[(y*icon_surface->w)+x] = icon_img.pixels.at((y*icon_img.width)+x).rgba;
+        }
+    }
+    SDL_UnlockSurface(icon_surface);
+    SDL_SetWindowIcon(SDL_Windows.at(window.window_index).window_ptr, icon_surface);
+};
+
+void RR_SetWindowFullscreen(RR_Window &window, bool set_flag){
+    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
+        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
+        RR_ForceQuit();
+        return;
+    }
+    SDL_SetWindowFullscreen( SDL_Windows.at(window.window_index).window_ptr, set_flag );
+};
+
+void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel){
+    window.overscan_color = pixel.rgba;
+};
+
+
 
 void RR_UpdateWindow(RR_Window &window){
     /*if(SDL_GetTicks64() < g_RR_InputNextRead){

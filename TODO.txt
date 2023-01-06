@@ -1,10 +1,6 @@
 Add more window control
--- Set fullscreen
 -- Set window resizeable
 -- Set window aspect correction
--- Change overscan color
--- Change window title
--- Change window icon
 
 Add more image formats
 -- Load PCX
@@ -16,8 +12,6 @@ Add more image formats
 -- Load RRI 
 
 Add input support
--- Keyboard
--- Mouse
 -- Joystick / Controler
 -- Touch ???
 

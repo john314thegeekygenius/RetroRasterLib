@@ -50,10 +50,6 @@ uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a
 #endif
 };
 
-void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel){
-    window.overscan_color = pixel.rgba;
-};
-
 
 // Primitives
 

@@ -38,6 +38,10 @@ int main(int argc, char *args[]){
     RR_Image block = RR_LoadImage(local_window, "block.bmp");
     RR_Image smile = RR_LoadImage(local_window, "smile.png");
     RR_Image blob = RR_LoadImage(local_window, "blob.bmp");
+    RR_Image logo32 = RR_LoadImage(local_window, "logo32.png");
+
+    // Set the window image
+    RR_SetWindowIcon(local_window, logo32);
 
     // Clear the screen
     RR_ClearScreen(local_window, RR_Pixel(RR_RGBA(0,0,255), 0));

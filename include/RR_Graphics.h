@@ -38,7 +38,6 @@
 
 #include <RR_Headers.h>
 
-
 typedef struct RR_Image_t {
     int width; // Width of the image
     int height; // Height of the image
@@ -58,13 +57,6 @@ b -> Blue value
 a -> Alpha value (optional, default 255)
 */
 uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a = 0xFF);
-
-/*
-Changes the overscan color
-window -> window to change color
-pixel  -> pixel with color data
-*/
-void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel);
 
 /*
 Sets a pixel value on the screen

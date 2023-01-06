@@ -34,10 +34,10 @@ int main(int argc, char *args[]){
 	RR_Window local_window = RR_CreateWindow("Test Window", 480, 480, 2, 2);
 
     // Load some images
-    RR_Image backdrop = RR_LoadImage(local_window, "background.jpg");
-    RR_Image block = RR_LoadImage(local_window, "block.bmp");
-    RR_Image smile = RR_LoadImage(local_window, "smile.png");
-    RR_Image blob = RR_LoadImage(local_window, "blob.bmp");
+    RR_Image backdrop = RR_LoadImage(local_window, "images/tests/background.jpg");
+    RR_Image block = RR_LoadImage(local_window, "images/tests/block.bmp");
+    RR_Image smile = RR_LoadImage(local_window, "images/tests/smile.png");
+    RR_Image blob = RR_LoadImage(local_window, "images/tests/blob.bmp");
     RR_Image logo32 = RR_LoadImage(local_window, "logo32.png");
 
     // Set the window image

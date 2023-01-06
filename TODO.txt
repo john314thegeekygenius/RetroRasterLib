@@ -1,7 +1,14 @@
 Add more image formats
--- Load GIF (multiple frames???)
+-- Load GIF w/ multiple frames???)
 -- Load RAW
 -- Load RRI 
+
+Add filled triangle rendering
+
+Add effects
+-- Bloom
+-- Rotation
+-- Blur
 
 Add input support
 -- Joystick / Controler

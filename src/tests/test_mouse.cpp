@@ -34,7 +34,7 @@ int main(int argc, char *args[]){
 	RR_Window local_window = RR_CreateWindow("Test Window", 256, 256, 2, 2);
 
     // Load an image
-    RR_Image block_img = RR_LoadImage(local_window, "block.bmp");
+    RR_Image block_img = RR_LoadImage(local_window, "images/tests/block.bmp");
 
     bool block_positions[32][32] = {0};
 

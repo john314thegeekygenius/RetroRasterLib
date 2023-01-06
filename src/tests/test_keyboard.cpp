@@ -34,7 +34,7 @@ int main(int argc, char *args[]){
 	RR_Window local_window = RR_CreateWindow("Test Window", 480, 480, 2, 2);
 
     // Load an image
-    RR_Image smile = RR_LoadImage(local_window, "smile.png");
+    RR_Image smile = RR_LoadImage(local_window, "images/tests/smile.png");
 
     RR_Position2D smile_pos = { 0, 0 };
     RR_Position2D smile_scale = { 3, 3 };

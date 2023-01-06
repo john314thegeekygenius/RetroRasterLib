@@ -332,6 +332,51 @@ RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
         }
         LoadSDL = true;
     }
+    if(ext.compare("pcx")==0){
+        RR_WriteLog("Reading PCX file: " + f_name);
+        temp_surface = IMG_LoadPCX_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("tga")==0){
+        RR_WriteLog("Reading TGA file: " + f_name);
+        temp_surface = IMG_LoadTGA_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("ico")==0){
+        RR_WriteLog("Reading ICO file: " + f_name);
+        temp_surface = IMG_LoadICO_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("gif")==0){
+        RR_WriteLog("Reading GIF file: " + f_name);
+        temp_surface = IMG_LoadGIF_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
+    if(ext.compare("svg")==0){
+        RR_WriteLog("Reading SVG file: " + f_name);
+        temp_surface = IMG_LoadSVG_RW(SDL_RWFromFile(f_name.c_str(), "rb"));
+        if(temp_surface == NULL){
+            RR_WriteLog("Error loading image! SDL_Error:" + std::string(SDL_GetError()));
+            return temp_img;
+        }
+        LoadSDL = true;
+    }
     if(LoadSDL){
         // Fix the surface
         SDL_Surface* formatted_surface = SDL_ConvertSurfaceFormat(temp_surface, SDL_PIXELFORMAT_ARGB8888, 0);

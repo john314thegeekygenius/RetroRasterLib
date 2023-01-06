@@ -193,7 +193,7 @@ void RR_SetWindowFullscreen(RR_Window &window, bool set_flag){
         RR_ForceQuit();
         return;
     }
-    SDL_SetWindowFullscreen( SDL_Windows.at(window.window_index).window_ptr, set_flag );
+    SDL_SetWindowFullscreen( SDL_Windows.at(window.window_index).window_ptr, (SDL_bool)set_flag );
 };
 
 void RR_SetWindowResizeable(RR_Window &window, bool set_flag){
@@ -202,7 +202,7 @@ void RR_SetWindowResizeable(RR_Window &window, bool set_flag){
         RR_ForceQuit();
         return;
     }
-    SDL_SetWindowResizable( SDL_Windows.at(window.window_index).window_ptr, set_flag );
+    SDL_SetWindowResizable( SDL_Windows.at(window.window_index).window_ptr, (SDL_bool)set_flag );
 };
 
 void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel){

@@ -1,9 +1,5 @@
 Add more image formats
--- Load PCX
--- Load TGA
--- Load ICO
 -- Load GIF (multiple frames???)
--- Load SVG ???
 -- Load RAW
 -- Load RRI 
 

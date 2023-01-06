@@ -90,32 +90,46 @@ void RR_DestroyWindow(RR_Window &window);
 void RR_DestroyWindows();
 
 /*
-Changes the overscan color
-window -> window to change color
-pixel  -> pixel with color data
-*/
-void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel);
-
-/*
 Set the window title
-window   -> window to set fullscreen
+window   -> window use
 title    -> name to use for window
 */
 void RR_SetWindowTitle(RR_Window &window, std::string title);
 
 /*
 Set the window icon to an image
-window   -> window to set fullscreen
+window   -> window use
 icon_img -> image to be used as an icon
 */
 void RR_SetWindowIcon(RR_Window &window, RR_Image &icon_img);
 
 /*
 Set the window into or out of fullscreen mode
-window   -> window to set fullscreen
+window   -> window use
 set_flag -> should the window be fullscreen
 */
 void RR_SetWindowFullscreen(RR_Window &window, bool set_flag);
+
+/*
+Set the window resizeable
+window   -> window use
+set_flag -> should the window be resizeable
+*/
+void RR_SetWindowResizeable(RR_Window &window, bool set_flag);
+
+/*
+Changes the overscan color
+window -> window use
+pixel  -> pixel with color data
+*/
+void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel);
+
+/*
+Keep the pixels square
+window   -> window use
+set_flag -> keep aspect ratio
+*/
+void RR_SetAspectRatio(RR_Window &window, bool set_flag);
 
 // Updates the window and checks window events 
 // window   ->   Refrence to window to be rastered

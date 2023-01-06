@@ -1,7 +1,3 @@
-Add more window control
--- Set window resizeable
--- Set window aspect correction
-
 Add more image formats
 -- Load PCX
 -- Load TGA

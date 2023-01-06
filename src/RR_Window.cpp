@@ -196,11 +196,22 @@ void RR_SetWindowFullscreen(RR_Window &window, bool set_flag){
     SDL_SetWindowFullscreen( SDL_Windows.at(window.window_index).window_ptr, set_flag );
 };
 
+void RR_SetWindowResizeable(RR_Window &window, bool set_flag){
+    if(window.window_index < 0 || window.window_index >= (int)SDL_Windows.size() ){
+        RR_WriteLog("Error! Invalid window index for window \""+window.window_name+"\"");
+        RR_ForceQuit();
+        return;
+    }
+    SDL_SetWindowResizable( SDL_Windows.at(window.window_index).window_ptr, set_flag );
+};
+
 void RR_SetOverscanColor(RR_Window &window, RR_Pixel pixel){
     window.overscan_color = pixel.rgba;
 };
 
-
+void RR_SetAspectRatio(RR_Window &window, bool set_flag){
+    window.keep_aspect = set_flag;
+};
 
 void RR_UpdateWindow(RR_Window &window){
     /*if(SDL_GetTicks64() < g_RR_InputNextRead){
@@ -265,6 +276,11 @@ void RR_UpdateWindow(RR_Window &window){
                 window.window_mouse.buttons[button_id].cur_state = sdl_window.window_events.button.state;
                 window.window_mouse.buttons[button_id].x = sdl_window.window_events.button.x;
                 window.window_mouse.buttons[button_id].y = sdl_window.window_events.button.y;
+                break;
+            case SDL_MOUSEWHEEL:
+                window.window_mouse.wheel_x = sdl_window.window_events.wheel.x;
+                window.window_mouse.wheel_y = sdl_window.window_events.wheel.y;
+                window.window_mouse.wheel_dir = sdl_window.window_events.wheel.direction;
                 break;
             case SDL_WINDOWEVENT:
                 switch (sdl_window.window_events.window.event) {

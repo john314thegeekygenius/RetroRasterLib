@@ -320,8 +320,38 @@ int RR_GetMouseWheelX(RR_Window &window);
 int RR_GetMouseWheelY(RR_Window &window);
 RR_MButton RR_GetMouseButton(RR_Window &window, int id);
 
-typedef struct RR_Controler_t {
+#define RR_MAX_CONTROLER_BUTTONS 32
 
+typedef struct RR_Controler_t {
+	// Joystick axies
+	float x[2], y[2];
+	int real_x[2], real_y[2];
+	int num_axis;
+	// Triggers
+	float trigger_value[2];
+	int real_trigger_value[2];
+	// Hat
+	int hat_x, hat_y;
+	// General Buttons
+	bool buttons[RR_MAX_CONTROLER_BUTTONS];
+	int num_buttons;
+	// Rumble
+	bool can_rumble;
+	// Is the controler still available?
+	bool available;
+	// SDL controler ID
+	int controler_id;
 }RR_Controler;
 
+// Return the number of controlers connected
+int RR_GetControlerCount();
+
+// Get a specific controler
+RR_Controler RR_GetControler(int controler_id);
+
+// Get the controler name
+std::string RR_GetControlerName(int controler_id);
+
+// Rumble the controler
+void RR_RumbleControler(RR_Controler &controler, float l_rumble, float r_rumble, int len_ms);
 

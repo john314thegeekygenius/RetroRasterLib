@@ -1,13 +1,19 @@
 Add more image formats
 -- Load GIF w/ multiple frames???)
 
+Add text rendering
+-- Fonts
+---- TFF
+---- RetroRasterFont
+
 Add effects
 -- Bloom
 -- Rotation
 -- Blur
 
 Add input support
--- Joystick / Controler
+-- Joystick misc things ???
+---- Haptic
 -- Touch ???
 
 Make RetroBlasterLib for audio

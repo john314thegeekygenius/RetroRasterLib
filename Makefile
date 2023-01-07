@@ -42,12 +42,14 @@ lib_static:
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Window.cpp -o $(OBJ_DIR)/RR_Window.o $(CXX_LIBS)
 	g++ -c $(CXX_FLAGS) $(SRC_DIR)/RR_Lib.cpp -o $(OBJ_DIR)/RR_Lib.o $(CXX_LIBS)
 	ar rcs $(LIB_DIR)/static/$(LIB_NAME).a $(OBJ_FILES)
+
 lib_shared:
 	g++ -c -fPIC $(CXX_FLAGS) $(SRC_DIR)/RR_Logger.cpp -o $(OBJ_DIR)/RR_Logger.o $(CXX_LIBS)
 	g++ -c -fPIC $(CXX_FLAGS) $(SRC_DIR)/RR_Graphics.cpp -o $(OBJ_DIR)/RR_Graphics.o $(CXX_LIBS)
 	g++ -c -fPIC $(CXX_FLAGS) $(SRC_DIR)/RR_Window.cpp -o $(OBJ_DIR)/RR_Window.o $(CXX_LIBS)
 	g++ -c -fPIC $(CXX_FLAGS) $(SRC_DIR)/RR_Lib.cpp -o $(OBJ_DIR)/RR_Lib.o $(CXX_LIBS)
 	g++ -shared $(LINK_FLAGS),-soname,$(LIB_NAME).so -o $(LIB_DIR)/shared/$(LIB_NAME).so $(OBJ_FILES)
+
 tests_static:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_log.cpp -o $(BIN_DIR)/tests/static/test_log $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/static/test_shapes $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
@@ -56,6 +58,8 @@ tests_static:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_keyboard.cpp -o $(BIN_DIR)/tests/static/test_keyboard $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_mouse.cpp -o $(BIN_DIR)/tests/static/test_mouse $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_multi_window.cpp -o $(BIN_DIR)/tests/static/test_multi_window $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_joystick.cpp -o $(BIN_DIR)/tests/static/test_joystick $(STATIC_RRLIB_FLAGS) $(CXX_LIBS)
+
 tests_shared:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_log.cpp -o $(BIN_DIR)/tests/shared/test_log $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_shapes.cpp -o $(BIN_DIR)/tests/shared/test_shapes $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
@@ -64,6 +68,7 @@ tests_shared:
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_keyboard.cpp -o $(BIN_DIR)/tests/shared/test_keyboard $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_mouse.cpp -o $(BIN_DIR)/tests/shared/test_mouse $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_multi_window.cpp -o $(BIN_DIR)/tests/shared/test_multi_window $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
+	g++ $(CXX_FLAGS) $(TEST_SRC_DIR)/test_joystick.cpp -o $(BIN_DIR)/tests/shared/test_joystick $(SHARED_RRLIB_FLAGS) $(CXX_LIBS)
 
 clean:
 	rm -f $(BIN_DIR)/test/shared/test_*

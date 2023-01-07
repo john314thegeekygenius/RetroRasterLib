@@ -1,5 +1,5 @@
 /*
-    Displaying and loading images
+    Testing keyboard input
     for RetroRasterLib
     Written by Jonathan Clevenger
 

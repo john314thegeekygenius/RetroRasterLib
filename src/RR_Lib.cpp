@@ -47,8 +47,11 @@ int RR_GlobalResizeWindow = -1;
 int RR_GlobalCloseWindow = -1;
 int RR_GlobalNewWindowWidth = 0;
 int RR_GlobalNewWindowHeight = 0;
+
 bool RR_GlobalKeyPresses[256];
 RR_Mouse RR_GlobalMouse;
+std::vector<RR_Controler> RR_GlobalControlers; 
+
 int OS_GlobalMouseX = 0;
 int OS_GlobalMouseY = 0;
 
@@ -73,6 +76,13 @@ void RR_InitLibrary(void) {
 			if( SDL_GlobalControlers.back() == NULL ){
 				RR_WriteLog("Warn: Unable to use controller! SDL Error:" + std::string(SDL_GetError()));
 			}else{
+				RR_GlobalControlers.push_back(RR_Controler());
+				RR_GlobalControlers.back().available = true;
+				RR_GlobalControlers.back().num_axis = SDL_JoystickNumAxes(SDL_GlobalControlers.back());
+				RR_GlobalControlers.back().num_buttons = SDL_JoystickNumButtons(SDL_GlobalControlers.back());
+				RR_GlobalControlers.back().can_rumble = SDL_JoystickHasRumble(SDL_GlobalControlers.back());
+
+				RR_GlobalControlers.back().controler_id = i;
 				SDL_GlobalControlers.push_back(NULL);
 			}
 		}
@@ -81,9 +91,9 @@ void RR_InitLibrary(void) {
 
 	RR_WriteLog("[Init] Loaded SDL2 sucessfully!");
 	if (SDL_BYTEORDER == SDL_BIG_ENDIAN){
-	RR_WriteLog("[Init] Using Big Endian format");		
+		RR_WriteLog("[Init] Using Big Endian format");		
 	}else{
-	RR_WriteLog("[Init] Using Little Endian format");
+		RR_WriteLog("[Init] Using Little Endian format");
 	}
 	RR_WriteLog("[Init] Done");
 	// Fix any flags
@@ -93,6 +103,15 @@ void RR_InitLibrary(void) {
 //__attribute__ ((destructor)) 
 void RR_DestroyLibrary(void) {
 	RR_WriteLog("Shutting Down...");
+	// Close the joysticks
+	for(int i = 0; i < (int)SDL_GlobalControlers.size(); i ++){
+		if(SDL_GlobalControlers.at(i) != NULL){
+			SDL_JoystickClose(SDL_GlobalControlers.at(i));
+			SDL_GlobalControlers.at(i) = NULL;
+		}
+		SDL_GlobalControlers.clear();
+	}
+
 	// Force everything to quit
 	RR_ForceQuit();
 	// Close the log
@@ -126,6 +145,7 @@ void RR_UpdateInput(){
 
     uint32_t sdl_key;
     int button_id;
+	int joystick_id;
 
 	SDL_Event SDL_GlobalEvents;
 
@@ -184,6 +204,99 @@ void RR_UpdateInput(){
 
 			// TODO:
             // Controler
+			case SDL_JOYAXISMOTION:
+				joystick_id = SDL_GlobalEvents.jaxis.which;
+				if(SDL_GlobalEvents.jaxis.axis==-1){
+					RR_WriteLog("Warn! Controler sent invalid axis!");
+				}else{
+					// Joystick X1
+					if(SDL_GlobalEvents.jaxis.axis==0){
+						RR_GlobalControlers.at(joystick_id).real_x[0] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).x[0] = (float)RR_GlobalControlers.at(joystick_id).real_x[0] / (float)0x7FFF;
+					}
+					if(SDL_GlobalEvents.jaxis.axis==1){
+						RR_GlobalControlers.at(joystick_id).real_y[0] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).y[0] = (float)RR_GlobalControlers.at(joystick_id).real_y[0] / (float)0x7FFF;
+					}
+					// Joystick Y1
+					if(SDL_GlobalEvents.jaxis.axis==3){
+						RR_GlobalControlers.at(joystick_id).real_x[1] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).x[1] = (float)RR_GlobalControlers.at(joystick_id).real_x[1] / (float)0x7FFF;
+					}
+					if(SDL_GlobalEvents.jaxis.axis==4){
+						RR_GlobalControlers.at(joystick_id).real_y[1] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).y[1] = (float)RR_GlobalControlers.at(joystick_id).real_y[1] / (float)0x7FFF;
+					}
+					// Joystick Triggers
+					if(SDL_GlobalEvents.jaxis.axis==2){
+						RR_GlobalControlers.at(joystick_id).real_trigger_value[0] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).trigger_value[0] = (float)(RR_GlobalControlers.at(joystick_id).real_trigger_value[0]+0x8000) / (float)0xFFFF;
+//						RR_GlobalControlers.at(joystick_id).trigger_value[0] = (float)RR_GlobalControlers.at(joystick_id).real_trigger_value[0] / (float)0x7FFF;
+					}
+					if(SDL_GlobalEvents.jaxis.axis==SDL_CONTROLLER_AXIS_TRIGGERRIGHT){
+						RR_GlobalControlers.at(joystick_id).real_trigger_value[1] = SDL_GlobalEvents.jaxis.value;
+						RR_GlobalControlers.at(joystick_id).trigger_value[1] = (float)(RR_GlobalControlers.at(joystick_id).real_trigger_value[1]+0x8000) / (float)0xFFFF;
+//						RR_GlobalControlers.at(joystick_id).trigger_value[1] = (float)RR_GlobalControlers.at(joystick_id).real_trigger_value[1] / (float)0x7FFF;
+					}
+				}
+			break;
+			case SDL_JOYBUTTONDOWN:
+				joystick_id = SDL_GlobalEvents.jbutton.which;
+				if(SDL_GlobalEvents.jbutton.button < 0 || SDL_GlobalEvents.jbutton.button >= RR_MAX_CONTROLER_BUTTONS){
+					RR_WriteLog("Warn! Controler sent invalid button id!");
+				}else{
+					RR_GlobalControlers.at(joystick_id).buttons[SDL_GlobalEvents.jbutton.button] = true;
+				}
+				break;
+			case SDL_JOYBUTTONUP:
+				joystick_id = SDL_GlobalEvents.jbutton.which;
+				if(SDL_GlobalEvents.jbutton.button < 0 || SDL_GlobalEvents.jbutton.button >= RR_MAX_CONTROLER_BUTTONS){
+					RR_WriteLog("Warn! Controler sent invalid button id!");
+				}else{
+					RR_GlobalControlers.at(joystick_id).buttons[SDL_GlobalEvents.jbutton.button] = false;
+				}
+				break;
+			case SDL_JOYHATMOTION:
+				joystick_id = SDL_GlobalEvents.jhat.which;
+				switch(SDL_GlobalEvents.jhat.value){
+					case SDL_HAT_CENTERED:
+						RR_GlobalControlers.at(joystick_id).hat_x = 0;
+						RR_GlobalControlers.at(joystick_id).hat_y = 0;
+						break;
+					case SDL_HAT_LEFTUP:
+						RR_GlobalControlers.at(joystick_id).hat_x = -1;
+						RR_GlobalControlers.at(joystick_id).hat_y = -1;
+						break;
+					case SDL_HAT_UP:
+						RR_GlobalControlers.at(joystick_id).hat_x = 0;
+						RR_GlobalControlers.at(joystick_id).hat_y = -1;
+						break;
+					case SDL_HAT_RIGHTUP:
+						RR_GlobalControlers.at(joystick_id).hat_x = 1;
+						RR_GlobalControlers.at(joystick_id).hat_y = -1;
+						break;
+					case SDL_HAT_RIGHT:
+						RR_GlobalControlers.at(joystick_id).hat_x = 1;
+						RR_GlobalControlers.at(joystick_id).hat_y = 0;
+						break;
+					case SDL_HAT_RIGHTDOWN:
+						RR_GlobalControlers.at(joystick_id).hat_x = 1;
+						RR_GlobalControlers.at(joystick_id).hat_y = 1;
+						break;
+					case SDL_HAT_DOWN:
+						RR_GlobalControlers.at(joystick_id).hat_x = 0;
+						RR_GlobalControlers.at(joystick_id).hat_y = 1;
+						break;
+					case SDL_HAT_LEFTDOWN:
+						RR_GlobalControlers.at(joystick_id).hat_x = -1;
+						RR_GlobalControlers.at(joystick_id).hat_y = 1;
+						break;
+					case SDL_HAT_LEFT:
+						RR_GlobalControlers.at(joystick_id).hat_x = -1;
+						RR_GlobalControlers.at(joystick_id).hat_y = 0;
+						break;
+				}
+				break;
 
             // Window
             case SDL_WINDOWEVENT:
@@ -210,12 +323,45 @@ void RR_UpdateInput(){
     }
 };
 
-
 uint32_t RR_SwapByteOrder(uint32_t b){
     return ((b&0xFF)<<24) | (((b>>8)&0xFF)<<16) | (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
 };
 
 uint16_t RR_SwapByteOrder(uint16_t b){
     return (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
+};
+
+int RR_GetControlerCount(){
+	return RR_GlobalControlers.size();
+};
+
+RR_Controler RR_GetControler(int controler_id){
+	if(controler_id < 0 || controler_id >= (int)RR_GlobalControlers.size()){
+		RR_WriteLog("Error! Invalid controler id: "+std::to_string(controler_id));
+		//RR_ForceQuit();
+		return RR_Controler(); // Returns invalid controler?? 
+	}
+	return RR_GlobalControlers.at(controler_id);
+};
+
+std::string RR_GetControlerName(int controler_id){
+	if(controler_id < 0 || controler_id >= (int)RR_GlobalControlers.size()){
+		RR_WriteLog("Error! Invalid controler id: "+std::to_string(controler_id));
+		return ""; // Returns invalid controler name 
+	}
+	return std::string(SDL_JoystickName(SDL_GlobalControlers.at(controler_id)));
+};
+
+void RR_RumbleControler(RR_Controler &controler, float l_rumble, float r_rumble, int len_ms){
+	int controler_id = controler.controler_id;
+	if(controler_id < 0 || controler_id >= (int)RR_GlobalControlers.size()){
+		RR_WriteLog("Error! Invalid controler id: "+std::to_string(controler_id));
+		return;
+	}
+	if(!RR_GlobalControlers.at(controler_id).can_rumble){
+		RR_WriteLog("Warn! Controler does not support rumble!");
+		return;
+	}
+	SDL_JoystickRumble(SDL_GlobalControlers.at(controler_id), l_rumble*0xFFFF, r_rumble*0xFFFF, len_ms);
 };
 

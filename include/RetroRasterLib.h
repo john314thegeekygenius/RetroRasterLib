@@ -71,3 +71,9 @@ void RR_FixFlags();
 
 // Updates the input data - Should be run almost every frame
 void RR_UpdateInput();
+
+// Swaps byte order of a 32bit value
+uint32_t RR_SwapByteOrder(uint32_t b);
+
+// Swaps byte order of a 16bit value
+uint16_t RR_SwapByteOrder(uint16_t b);

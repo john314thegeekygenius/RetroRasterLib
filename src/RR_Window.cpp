@@ -252,6 +252,7 @@ void RR_UpdateWindow(RR_Window &window){
         if(RR_GlobalMouse.window_id == local_win_id){
             // Update the mouse
             window.window_mouse = RR_GlobalMouse;
+            // Code to use global x pos
             /*
             int win_x, win_y;
             SDL_GetWindowPosition(sdl_window.window_ptr, &win_x, &win_y);

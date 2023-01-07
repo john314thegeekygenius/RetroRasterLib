@@ -8,6 +8,9 @@
 ![Picture of shapes test](images/shapes_demo.png)
 - Image loading
 - Multiple windows
+- Keyboard support
+- Mouse support
+- Joystick support
 
 ### Notes
  - This library is not done yet!

@@ -50,6 +50,9 @@ uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a
 #endif
 };
 
+void RR_SetAlphaBlend(RR_Window &window, uint32_t blend){
+    window.alpha_blend = blend;
+};
 
 // Primitives
 
@@ -57,6 +60,14 @@ void RR_Plot(RR_Window &window, int x, int y, RR_Pixel pixel){
     if(x < 0 || y < 0 || y >= window.screen_height || x >= window.screen_width)
         return;
     RR_Pixel &scr_pixel = window.screen_pixels[(y*window.screen_width) + x];
+    if(window.alpha_blend&RR_BLEND_TRANSPARENT){
+        if(!(pixel.rgba>>24)){
+            return;
+        }
+    }
+    if(window.alpha_blend&RR_BLEND_PIXELS){
+        pixel.blend(scr_pixel);
+    }
     if(scr_pixel.depth <= pixel.depth){
         scr_pixel = pixel;
     }
@@ -84,10 +95,7 @@ void RR_BlitRect(RR_Window &window, int x, int y, int w, int h, RR_Pixel pixel){
     // Draw the rectangle
     for(int i = y; i < y+h; i++){
         for(int e = x; e < x+w; e++){
-            RR_Pixel &scr_pixel = window.screen_pixels[(i*window.screen_width) + e];
-            if(scr_pixel.depth <= pixel.depth){
-                scr_pixel = pixel;
-            }
+            RR_Plot(window,e,i,pixel);
         }
     }
 };
@@ -451,6 +459,16 @@ next:
     }
 };
 
+void RR_BlitBezier(RR_Window &window, int x1, int y1, int cx1, int cy1, int cx2, int cy2, int x2, int y2, RR_Pixel pixel){
+    double render_res = (double)0.001; // Seems to work well?
+    for(double t = 0.0; t < 1.0; t+= render_res){
+        double tdif = 1.0-t; 
+        double xt = ((tdif*tdif*tdif)*x1)+(3*t*(tdif*tdif)*cx1)+(3*(t*t)*(tdif)*cx2)+((t*t*t)*x2);
+        double yt = ((tdif*tdif*tdif)*y1)+(3*t*(tdif*tdif)*cy1)+(3*(t*t)*(tdif)*cy2)+((t*t*t)*y2);
+        RR_Plot(window, xt, yt, pixel);
+    }
+};
+
 void RR_ClearScreen(RR_Window &window, RR_Pixel pixel){
     for(int i = 0; i < (int)window.screen_pixels.size(); i++){
         window.screen_pixels.at(i) = pixel;
@@ -697,3 +715,163 @@ RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
     return temp_img;
 };
 
+// Fancy graphics stuff
+
+void RR_MatrixSetIdentity(RR_Matrix3x3_t &mat){
+    // Clear the matrix
+    memset(&mat.m,0,sizeof(mat.m));
+    // Setup an identity matrix
+    mat.m[0][0] = 1.0f;
+    mat.m[1][1] = 1.0f;
+    mat.m[2][2] = 1.0f;
+};
+
+void RR_MatrixTranslate(RR_Matrix3x3_t &mat, RR_Position2D offset){
+    // Clear the matrix
+    memset(&mat.m,0,sizeof(mat.m));
+    // Setup an identity matrix
+    mat.m[0][0] = 1.0f;
+    mat.m[1][1] = 1.0f;
+    mat.m[2][2] = 1.0f;
+    // Add translation
+    mat.m[2][0] = offset.x;
+    mat.m[2][1] = offset.y;
+};
+
+void RR_MatrixRotate(RR_Matrix3x3_t &mat, RR_Angle theta){
+    // Clear the matrix
+    memset(&mat.m,0,sizeof(mat.m));
+    // Setup a rotation matrix
+    mat.m[0][0] = cosf(theta);
+    mat.m[1][0] = sinf(theta);
+    mat.m[0][1] = -sinf(theta);
+    mat.m[1][1] = cosf(theta);
+    mat.m[2][2] = 1.0f;
+};
+
+void RR_MatrixScale(RR_Matrix3x3_t &mat, RR_Position2D size){
+    // Clear the matrix
+    memset(&mat.m,0,sizeof(mat.m));
+    // Setup a scaling matrix
+    mat.m[0][0] = size.x;
+    mat.m[1][1] = size.y;
+    mat.m[2][2] = 1.0f;
+};
+
+void RR_MatrixSheer(RR_Matrix3x3_t &mat, RR_Position2D shift){
+    // Clear the matrix
+    memset(&mat.m,0,sizeof(mat.m));
+    // Setup a sheering matrix
+    mat.m[0][0] = 1.0f;
+    mat.m[1][0] = shift.x;
+    mat.m[1][1] = 1.0f;
+    mat.m[0][1] = shift.y;
+    mat.m[2][2] = 1.0f;
+};
+
+void RR_MatrixMultiply(RR_Matrix3x3_t &result, RR_Matrix3x3_t &matA, RR_Matrix3x3_t &matB){
+    // Clear the matrix
+    memset(&result.m,0,sizeof(result.m));
+    // Multiply the matrices
+    // TODO:
+    // Unroll this??
+    for(int c = 0; c < 3; c++){
+        for(int r = 0; r < 3; r++){
+            result.m[c][r] = (matA.m[0][r] * matB.m[c][0]) +
+                             (matA.m[1][r] * matB.m[c][1]) +
+                             (matA.m[2][r] * matB.m[c][2]);
+        }
+    }
+};
+
+void RR_MatrixPointForward(RR_Matrix3x3_t&mat, RR_Position2D &in, RR_Position2D &out){
+    // Return a point modified by the matrix
+    out.x = (in.x * mat.m[0][0]) + (in.y * mat.m[1][0]) + (mat.m[2][0]);
+    out.y = (in.x * mat.m[0][1]) + (in.y * mat.m[1][1]) + (mat.m[2][1]);
+};
+
+void RR_MatrixInvert(RR_Matrix3x3 &in, RR_Matrix3x3 &out){
+    // Taken directly from :
+    // https://github.com/OneLoneCoder/Javidx9/blob/master/PixelGameEngine/SmallerProjects/OneLoneCoder_PGE_SpriteTransforms.cpp
+
+    float det = in.m[0][0] * (in.m[1][1] * in.m[2][2] - in.m[1][2] * in.m[2][1]) -
+               in.m[1][0] * (in.m[0][1] * in.m[2][2] - in.m[2][1] * in.m[0][2]) +
+                in.m[2][0] * (in.m[0][1] * in.m[1][2] - in.m[1][1] * in.m[0][2]);
+
+    float idet = 1.0f / det;
+    out.m[0][0] = (in.m[1][1] * in.m[2][2] - in.m[1][2] * in.m[2][1]) * idet;
+    out.m[1][0] = (in.m[2][0] * in.m[1][2] - in.m[1][0] * in.m[2][2]) * idet;
+    out.m[2][0] = (in.m[1][0] * in.m[2][1] - in.m[2][0] * in.m[1][1]) * idet;
+    out.m[0][1] = (in.m[2][1] * in.m[0][2] - in.m[0][1] * in.m[2][2]) * idet;
+    out.m[1][1] = (in.m[0][0] * in.m[2][2] - in.m[2][0] * in.m[0][2]) * idet;
+    out.m[2][1] = (in.m[0][1] * in.m[2][0] - in.m[0][0] * in.m[2][1]) * idet;
+    out.m[0][2] = (in.m[0][1] * in.m[1][2] - in.m[0][2] * in.m[1][1]) * idet;
+    out.m[1][2] = (in.m[0][2] * in.m[1][0] - in.m[0][0] * in.m[1][2]) * idet;
+    out.m[2][2] = (in.m[0][0] * in.m[1][1] - in.m[0][1] * in.m[1][0]) * idet;
+};
+
+void RR_BlitImage(RR_Window &window, RR_Image &image, RR_Matrix3x3_t &mat, RR_Matrix3x3 &matInv){
+    // Find the bounding box of the final image
+    RR_Position2D start_pos, end_pos, point_pos, test_pos;
+    // Top Left
+    test_pos.x = test_pos.y = 0.0f;
+    RR_MatrixPointForward(mat, test_pos, point_pos);
+    start_pos = end_pos = point_pos;
+    // Bottom Right
+    test_pos.x = (float)image.width;
+    test_pos.y = (float)image.height;
+    RR_MatrixPointForward(mat, test_pos, point_pos);
+    // Sort the points
+    start_pos.x = std::min(start_pos.x, point_pos.x);
+    start_pos.y = std::min(start_pos.y, point_pos.y);
+    end_pos.x = std::max(end_pos.x, point_pos.x);
+    end_pos.y = std::max(end_pos.y, point_pos.y);
+    // Bottom Left
+    test_pos.x = 0.0f;
+    test_pos.y = (float)image.height;
+    RR_MatrixPointForward(mat, test_pos, point_pos);
+    // Sort the points
+    start_pos.x = std::min(start_pos.x, point_pos.x);
+    start_pos.y = std::min(start_pos.y, point_pos.y);
+    end_pos.x = std::max(end_pos.x, point_pos.x);
+    end_pos.y = std::max(end_pos.y, point_pos.y);
+    // Top Right
+    test_pos.x = (float)image.width;
+    test_pos.y = 0.0f;
+    RR_MatrixPointForward(mat, test_pos, point_pos);
+    // Sort the points
+    start_pos.x = std::min(start_pos.x, point_pos.x);
+    start_pos.y = std::min(start_pos.y, point_pos.y);
+    end_pos.x = std::max(end_pos.x, point_pos.x);
+    end_pos.y = std::max(end_pos.y, point_pos.y);
+
+    // Blit the image to screen
+    RR_Position2D cur_pos, new_pos;
+    for(int x = start_pos.x; x < end_pos.x; x++){
+        for(int y = start_pos.y; y < end_pos.y; y++){
+            cur_pos.x = x; cur_pos.y = y;
+            RR_MatrixPointForward(matInv, cur_pos, new_pos);
+            RR_Pixel p = image.sample((int)(new_pos.x+0.5f), (int)(new_pos.y+0.5f));
+            RR_Plot(window, x, y, p);
+        }
+    }
+};
+
+RR_Image RR_GetImage(RR_Window &window, int x, int y, int w, int h){
+    RR_Image temp;
+    temp.width = w;
+    temp.height = h;
+    temp.pixels.resize(w*h);
+    for(int e = 0; e < h; e++){
+        for(int i = 0; i < w; i++){
+            temp.pixels.at((e*w)+i) = window.screen_pixels.at(((e+y)*window.screen_width)+(i+x));
+        }
+    }
+    return temp;
+};
+
+RR_Font RR_LoadFont(std::string f_name){
+    // TODO:
+    // Make this load a real font
+    return RR_Font(); 
+};

@@ -38,12 +38,8 @@
 
 #include <RR_Headers.h>
 
-typedef uint32_t RR_Color; // Uses ARGB format: 0xAARRGGBB
-
-typedef struct RR_Pixel_t {
-    RR_Color rgba;  // Color to be displayed
-    uint32_t depth = 0; // Depth of pixel
-}RR_Pixel;
+// Set the default FPS max to 144hz
+#define RR_DEFAULT_FPS 144
 
 typedef struct SDL_WindowInfo_t {
 	SDL_Window *window_ptr = NULL;
@@ -62,10 +58,20 @@ typedef struct RR_Window_t {
     RR_Color overscan_color; // Color to display when the 
                              // screen is smaller than the window
     std::vector<RR_Pixel> screen_pixels; // List of pixels to be displayed
+    uint32_t alpha_blend; // Do we do alpha blending?
 
     std::string window_name; // Name of the window
     int window_index; // Index into the window handler
     bool window_closed; // Is the window closed
+
+    // FPS
+    int frame_time;
+    int fps;
+    int frame_count;
+    int max_fps;
+    uint64_t next_fps_tick;
+    uint64_t last_frame_time;
+    int current_frame;
 
 	bool keycodes[256] = {false}; // List of keycodes
 	RR_Mouse window_mouse; // Mouse info
@@ -142,9 +148,15 @@ void RR_UpdateWindow(RR_Window &window);
 // window   ->   Refrence to window to be rastered
 void RR_RasterWindow(RR_Window &window);
 
-// Returns the current Frames Per Second of the window
-uint32_t RR_GetFPS();
+// Returns the current frame tick of window
+uint64_t RR_GetFrameTick(RR_Window &window);
 
-// Sets the maximum fps
-void RR_SetMaxFPS(uint32_t maxfps);
+// Returns the number of seconds since last frame
+float RR_ElapsedTime(RR_Window &window);
+
+// Returns the current Frames Per Second of the window
+uint32_t RR_GetFPS(RR_Window &window);
+
+// Sets the maximum fps for the window
+void RR_SetMaxFPS(RR_Window &window, uint32_t maxfps);
 

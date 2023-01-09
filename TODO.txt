@@ -3,16 +3,17 @@ Add more image formats
 
 Add text rendering
 -- Fonts
----- TFF
+---- TTF
 ---- RetroRasterFont
 
 Add effects
 -- Bloom
--- Rotation
 -- Blur
+-- Alpha blending (other types?)
 
 Add input support
--- Joystick misc things ???
+-- Joystick misc
+---- Removal / Plugging in
 ---- Haptic
 -- Touch ???
 

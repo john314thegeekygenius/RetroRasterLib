@@ -343,6 +343,13 @@ typedef struct RR_Controler_t {
 	int controler_id;
 }RR_Controler;
 
+
+// Adds a controler
+void RR_AddControler(int joystick_id);
+
+// Removes a controler
+void RR_RemoveControler(int joystick_id);
+
 // Return the number of controlers connected
 int RR_GetControlerCount();
 

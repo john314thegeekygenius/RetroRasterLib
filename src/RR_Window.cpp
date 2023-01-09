@@ -41,15 +41,6 @@
 
 std::vector<SDL_WindowInfo> SDL_Windows;
 
-uint64_t g_RR_FPSNextTick = 0;
-uint64_t g_RR_FrameTime = 0;
-uint64_t g_RR_LastFrameTick = 0;
-uint32_t g_RR_FrameCount = 0;
-uint32_t g_RR_FPS = 0;
-
-uint32_t g_RR_MaxFPS = 144; // 144hz
-uint64_t g_RR_InputNextRead = 0;
-
 // Pulled from RR_Lib.cpp
 extern bool RR_GlobalKeyPresses[256];
 extern RR_Mouse RR_GlobalMouse;
@@ -74,6 +65,14 @@ RR_Window RR_CreateWindow(std::string name, int screen_width, int screen_height,
     local_window.overscan_color = RR_RGBA(0,0,0);
     local_window.window_name = name;
     local_window.window_index = SDL_Windows.size();
+    // FPS
+    local_window.frame_time = 0;
+    local_window.fps = 0;
+    local_window.frame_count = 0;
+    local_window.max_fps = RR_DEFAULT_FPS;
+    local_window.next_fps_tick = 0;
+    local_window.last_frame_time = 0;
+    local_window.current_frame = 0;
 
 	// Create an SDL2 window
 	SDL_WindowInfo temp_sdl_window;
@@ -342,34 +341,56 @@ void RR_RasterWindow(RR_Window &window){
 	//Update the surface
 	SDL_UpdateWindowSurface( sdl_window.window_ptr );
 
-    g_RR_FrameCount += 1;
+    window.frame_count += 1;
+    window.current_frame += 1;
 
     // Calculate the frame time
-    g_RR_FrameTime = SDL_GetTicks64() - g_RR_LastFrameTick;
+    window.frame_time = SDL_GetTicks64() - window.last_frame_time;
 
     // Generate the frames per second
-    if(SDL_GetTicks64() >= g_RR_FPSNextTick){
-        g_RR_FPSNextTick = SDL_GetTicks64() + 1000;
-        g_RR_FPS = g_RR_FrameCount;
-        g_RR_FrameCount = 0;
+    if(SDL_GetTicks64() >= window.next_fps_tick){
+        window.next_fps_tick = SDL_GetTicks64() + 1000;
+        window.fps = window.frame_count;
+        window.frame_count = 0;
         //RR_WriteLog("FPS: "+std::to_string(RR_GetFPS()));        
     }
     // Limit the FPS
-    uint64_t fpsdelay = round(1000.0f/(float)(g_RR_MaxFPS)) - g_RR_FrameTime;
+    uint64_t fpsdelay = round(1000.0f/(float)(window.max_fps)) - window.frame_time;
     uint64_t fpslimit = SDL_GetTicks64()+fpsdelay;
     while(SDL_GetTicks64() < fpslimit){};
 
     // Start the ticks after we wait for the FPS limiter
-    g_RR_LastFrameTick = SDL_GetTicks64();
+    window.last_frame_time = SDL_GetTicks64();
 };
 
-uint32_t RR_GetFPS(){
-    return g_RR_FPS;
+uint64_t RR_GetFrameTick(RR_Window &window){
+    return window.current_frame;
 };
 
-void RR_SetMaxFPS(uint32_t maxfps){
-    g_RR_MaxFPS = maxfps;
-    RR_WriteLog("Set max FPS to "+std::to_string(maxfps));
+float RR_ElapsedTime(RR_Window &window){
+    // TODO:
+    // Make this return the correct value
+    /*
+    // INIT
+    auto tp1 = std::chrono::system_clock::now();
+    auto tp2 = std::chrono::system_clock::now();
+
+    // IN LOOP
+    // Handle Timing
+    tp2 = std::chrono::system_clock::now();
+    std::chrono::duration<float> elapsedTime = tp2 - tp1;
+    tp1 = tp2;
+    float fElapsedTime = elapsedTime.count();
+    */
+    return 0.05f;//window.frame_time/1000.0f;
+};
+
+uint32_t RR_GetFPS(RR_Window &window){
+    return window.fps;
+};
+
+void RR_SetMaxFPS(RR_Window &window, uint32_t maxfps){
+    window.max_fps = maxfps;
 };
 
 // Input

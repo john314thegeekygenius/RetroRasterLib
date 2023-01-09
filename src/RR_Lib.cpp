@@ -55,6 +55,7 @@ std::vector<RR_Controler> RR_GlobalControlers;
 int OS_GlobalMouseX = 0;
 int OS_GlobalMouseY = 0;
 
+
 void RR_InitLibrary(void) {
 	RR_OpenLog();
 	RR_WriteLog("[Init] Initializing...");
@@ -70,21 +71,8 @@ void RR_InitLibrary(void) {
 	} else {
 		RR_WriteLog("Info: "+std::to_string(SDL_NumJoysticks())+" controllers found.");
 		// Load the joysticks
-		SDL_GlobalControlers.push_back(NULL);
 		for(int i = 0; i < SDL_NumJoysticks(); i++){
-			SDL_GlobalControlers.back() = SDL_JoystickOpen( i );
-			if( SDL_GlobalControlers.back() == NULL ){
-				RR_WriteLog("Warn: Unable to use controller! SDL Error:" + std::string(SDL_GetError()));
-			}else{
-				RR_GlobalControlers.push_back(RR_Controler());
-				RR_GlobalControlers.back().available = true;
-				RR_GlobalControlers.back().num_axis = SDL_JoystickNumAxes(SDL_GlobalControlers.back());
-				RR_GlobalControlers.back().num_buttons = SDL_JoystickNumButtons(SDL_GlobalControlers.back());
-				RR_GlobalControlers.back().can_rumble = SDL_JoystickHasRumble(SDL_GlobalControlers.back());
-
-				RR_GlobalControlers.back().controler_id = i;
-				SDL_GlobalControlers.push_back(NULL);
-			}
+			RR_AddControler(i);
 		}
 	}
 
@@ -105,12 +93,9 @@ void RR_DestroyLibrary(void) {
 	RR_WriteLog("Shutting Down...");
 	// Close the joysticks
 	for(int i = 0; i < (int)SDL_GlobalControlers.size(); i ++){
-		if(SDL_GlobalControlers.at(i) != NULL){
-			SDL_JoystickClose(SDL_GlobalControlers.at(i));
-			SDL_GlobalControlers.at(i) = NULL;
-		}
-		SDL_GlobalControlers.clear();
+		RR_RemoveControler(i);
 	}
+	SDL_GlobalControlers.clear();
 
 	// Force everything to quit
 	RR_ForceQuit();
@@ -297,7 +282,16 @@ void RR_UpdateInput(){
 						break;
 				}
 				break;
-
+			case SDL_JOYDEVICEADDED:
+				// Add the controler
+				joystick_id = SDL_GlobalEvents.jdevice.which;
+				RR_AddControler(joystick_id);
+				break;
+			case SDL_JOYDEVICEREMOVED:
+				// Remove the controler
+				joystick_id = SDL_GlobalEvents.jdevice.which;
+				RR_RemoveControler(joystick_id);
+				break;
             // Window
             case SDL_WINDOWEVENT:
                 switch (SDL_GlobalEvents.window.event) {
@@ -330,6 +324,48 @@ uint32_t RR_SwapByteOrder(uint32_t b){
 uint16_t RR_SwapByteOrder(uint16_t b){
     return (((b>>16)&0xFF)<<8) | ((b>>24)&0xFF);
 };
+
+void RR_AddControler(int joystick_id){
+	// Check if the controler was already plugged in??
+	RR_WriteLog("Added controler: "+std::to_string(joystick_id));
+	for(RR_Controler &controler : RR_GlobalControlers){
+		if(controler.controler_id == joystick_id){
+			controler.available = true;
+			return;
+		}
+	}
+
+	if(!( SDL_GlobalControlers.size() && SDL_GlobalControlers.back() == NULL )){
+		SDL_GlobalControlers.push_back(NULL);
+	}
+	SDL_GlobalControlers.back() = SDL_JoystickOpen( joystick_id );
+	if( SDL_GlobalControlers.back() == NULL ){
+		RR_WriteLog("Warn: Unable to use controller! SDL Error:" + std::string(SDL_GetError()));
+		//SDL_GlobalControlers.erase(SDL_GlobalControlers.end());
+	}else{
+		RR_GlobalControlers.push_back(RR_Controler());
+		RR_GlobalControlers.back().available = true;
+		RR_GlobalControlers.back().num_axis = SDL_JoystickNumAxes(SDL_GlobalControlers.back());
+		RR_GlobalControlers.back().num_buttons = SDL_JoystickNumButtons(SDL_GlobalControlers.back());
+		RR_GlobalControlers.back().can_rumble = SDL_JoystickHasRumble(SDL_GlobalControlers.back());
+
+		RR_GlobalControlers.back().controler_id = joystick_id;
+	}
+
+};
+
+void RR_RemoveControler(int joystick_id){
+	if(joystick_id < 0 || joystick_id >= (int)SDL_GlobalControlers.size()){
+		RR_WriteLog("Error! Bad joystick ID to remove!");
+		return;
+	}
+	RR_GlobalControlers.at(joystick_id).available = false;
+	if(SDL_GlobalControlers.at(joystick_id) != NULL){
+		SDL_JoystickClose(SDL_GlobalControlers.at(joystick_id));
+		SDL_GlobalControlers.at(joystick_id) = NULL;
+	}
+};
+
 
 int RR_GetControlerCount(){
 	return RR_GlobalControlers.size();

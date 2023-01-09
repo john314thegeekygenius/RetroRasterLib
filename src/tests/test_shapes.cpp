@@ -69,6 +69,10 @@ int main(int argc, char *args[]){
         // Draw a triangle
         RR_BlitTriangle(local_window, 50, 200, 100, 50, 280, 80, RR_Pixel(RR_RGBA(255,255,255),0));
 
+        // Draw a bezier curve
+        for(int i = 0; i < 320; i++)
+            RR_BlitBezier(local_window, 0,0, 320,240, -160,240, i, 0, RR_Pixel(RR_RGBA(i*0.8f,0,0),0));
+
         // Draw a moving rect
         RR_BlitRect(local_window, RX, 120, 16, 16, RR_Pixel(RR_RGBA(128,128,128), 0));
         RX += 1;

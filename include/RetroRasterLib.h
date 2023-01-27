@@ -37,7 +37,7 @@
 
 #pragma once
 
-#define RR_VER_STRING "RR_v.0.0.3-alpha"
+#define RR_VER_STRING "RR_v.0.0.4-alpha"
 
 
 #include <RR_Headers.h>

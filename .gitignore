@@ -2,3 +2,9 @@ bin
 lib
 obj
 logs
+python
+RetroRasterLib/x64
+RRTestGraphics/x64
+RRTestLog/x64
+RRTestWindow/x64
+launch_shared_tests.sh

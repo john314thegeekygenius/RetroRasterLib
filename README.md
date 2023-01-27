@@ -1,6 +1,6 @@
 # Retro Raster Lib
 ![Library logo](logo256.png)<br>
--- Current Version 0.0.3-alpha --
+-- Current Version 0.0.4-alpha --
 ---
 ### Features
 - Pixel based graphics
@@ -30,10 +30,6 @@ make all
 `
 
 #### Windows
-<br>
-Download the SDL2-VC files
-<br>
-Place the include and lib folders in the SDL2 and SDL2_Image directories located in RetroRasterLib/SDL2
-<br>
+Download the SDL2-VC files<br>
+Place the include and lib folders in the SDL2 and SDL2_Image directories located in RetroRasterLib/SDL2<br>
 Build with the RetroRasterLib Visual Studio Solution file
-

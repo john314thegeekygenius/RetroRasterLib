@@ -78,13 +78,14 @@ clean:
 	rm -f $(LIB_DIR)/shared/*.so
 	rm -f $(LIB_DIR)/static/*.a
 	rm -f $(OBJ_DIR)/*.o
-git:
-	git add src
-	git add include
-	git add Makefile
-	git add RetroRasterLib.code-workspace
-	git add .gitignore
-	git add *.md
-	@read -p "Please enter a commit message:" msg; \
-	git commit -m "$$msg"
-	git push
+# Deprecated git pushing - use vscode
+#git:
+#	git add src
+#	git add include
+#	git add Makefile
+#	git add RetroRasterLib.code-workspace
+#	git add .gitignore
+#	git add *.md
+#	@read -p "Please enter a commit message:" msg; \
+#	git commit -m "$$msg"
+#	git push

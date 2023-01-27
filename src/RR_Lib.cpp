@@ -57,6 +57,9 @@ int OS_GlobalMouseY = 0;
 
 
 void RR_InitLibrary(void) {
+#ifdef _WIN64 || _WIN32
+	SDL_SetMainReady();
+#endif
 	RR_OpenLog();
 	RR_WriteLog("[Init] Initializing...");
 	// Initialize SDL2

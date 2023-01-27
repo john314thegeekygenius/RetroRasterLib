@@ -30,5 +30,10 @@ make all
 `
 
 #### Windows
-This project has not built on Windows yet.
+<br>
+Download the SDL2-VC files
+<br>
+Place the include and lib folders in the SDL2 and SDL2_Image directories located in RetroRasterLib/SDL2
+<br>
+Build with the RetroRasterLib Visual Studio Solution file
 

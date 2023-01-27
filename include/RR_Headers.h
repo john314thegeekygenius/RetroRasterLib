@@ -42,6 +42,10 @@
 #include <string>
 #include <fstream>
 
+#ifdef _WIN64 || _WIN32
+#define SDL_MAIN_HANDLED
+#endif
+
 #include <SDL.h>
 #include <SDL_image.h>
 

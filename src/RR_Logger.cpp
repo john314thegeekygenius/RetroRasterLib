@@ -41,6 +41,9 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
+#ifdef _WIN64 || _WIN32
+#include <windows.h>
+#endif
 
 #include <RetroRasterLib.h>
 
@@ -83,13 +86,14 @@ void RR_WriteLog(std::string log_str){
     // Make sure this works on windows machines
     #if defined(_WIN64) || defined(_WIN32)
         // Microsoft Windows, so use windows console color format
-        escape_sequence = "ABCD";
-        escape_sequence[0] = 0xE2;
-        escape_sequence[1] = 0x90;
-        escape_sequence[2] = 0x9B;
-        escape_sequence[3] = 0x0A;
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+        DWORD dwMode = 0;
+        GetConsoleMode(hConsole, &dwMode);
+        dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        SetConsoleMode(hConsole, dwMode);
+        escape_sequence = "\x1b";
     #endif
-    
+
 
     int write_color = -1;
     bool color_changed = false;
@@ -179,13 +183,13 @@ void RR_WriteLog(std::string log_str){
     }
     // Reset the color after every line
     output_string += escape_sequence;
+
     output_string += "[0m";
 
     if(RR_LogFile.is_open()){
         RR_LogFile << raw_string << std::endl;
     }
     std::cout << output_string << std::endl;
-
 };
 
 void RR_CloseLog(){

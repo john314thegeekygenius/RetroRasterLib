@@ -42,7 +42,7 @@
 #include <string>
 #include <fstream>
 
-#ifdef _WIN64 || _WIN32
+#if (defined(_WIN64) || defined(_WIN32))
 #define SDL_MAIN_HANDLED
 #endif
 

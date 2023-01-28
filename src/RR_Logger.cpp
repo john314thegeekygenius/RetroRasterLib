@@ -41,7 +41,7 @@
 #include <sstream>
 #include <fstream>
 #include <filesystem>
-#ifdef _WIN64 || _WIN32
+#if (defined(_WIN64) || defined(_WIN32))
 #include <windows.h>
 #endif
 
@@ -82,9 +82,8 @@ void RR_WriteLog(std::string log_str){
         // Linux or Cygwin, so make the colors use linux format
         escape_sequence = "\033";
     #endif
-    // TODO:
-    // Make sure this works on windows machines
-    #if defined(_WIN64) || defined(_WIN32)
+
+    #if (defined(_WIN64) || defined(_WIN32))
         // Microsoft Windows, so use windows console color format
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD dwMode = 0;

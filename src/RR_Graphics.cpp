@@ -503,6 +503,11 @@ void RR_BlitImage(RR_Window &window, RR_Image &image, int x, int y, float sw, fl
 // Graphics formats
 
 void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw, float sh){
+    RR_Image winimg(window.screen_pixels);
+    RR_WriteImageToFile(winimg, f_name, sw, sh);
+};
+
+void RR_WriteImageToFile(RR_Image &image, std::string f_name, float sw, float sh){
     // Figure out what the image format is
     std::string ext;
     if(f_name.length() < 3){
@@ -515,17 +520,17 @@ void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw, float
     for(char &c : ext){ c = tolower(c); }
     if(ext.compare("bmp")==0){
         RR_WriteLog("Writing to BMP file: " + f_name);
-        SDL_SaveBMP(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str());
+        SDL_SaveBMP(image.getSDLSurface(), f_name.c_str());
         return;
     }
     if(ext.compare("png")==0){
         RR_WriteLog("Writing to PNG file: " + f_name);
-        IMG_SavePNG(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str());
+        IMG_SavePNG(image.getSDLSurface(), f_name.c_str());
         return;
     }
     if(ext.compare("jpg")==0 || ext.compare("peg")==0){
         RR_WriteLog("Writing to JPEG file: " + f_name);
-        IMG_SaveJPG(SDL_Windows.at(window.window_index).screen_surface, f_name.c_str(),100);
+        IMG_SaveJPG(image.getSDLSurface(), f_name.c_str(),100);
         return;
     }
     if(ext.compare("raw")==0){
@@ -536,8 +541,32 @@ void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw, float
     }
     if(ext.compare("rri")==0){
         RR_WriteLog("Writing to RRI file: " + f_name);
-        // TODO:
-        // Make this write the pixels to a RetroRasterImage file
+        RR_RRIHeader header;
+        std::ofstream image_file;
+
+        image_file.open(f_name);
+        if(!image_file.is_open()){
+            RR_WriteLog("Error saving image!");
+            return;
+        }
+        // Make the header
+        header.hash[0] = header.hash[1] = 'R'; 
+        header.hash[2] = 'I';
+        header.width = image.width;
+        header.height = image.height;
+        header.name_string = "SCRSHOT";
+        header.name_len = header.name_string.length();
+        // Write the header
+        image_file.write((char*)&header.hash,sizeof(char)*3);
+        image_file.write((char*)&header.width,sizeof(uint32_t));
+        image_file.write((char*)&header.height,sizeof(uint32_t));
+        image_file.write((char*)&header.name_len,sizeof(uint32_t));
+        image_file.write((char*)header.name_string.data(),sizeof(char)*header.name_len);
+        // Write the pixels
+        for(RR_Pixel &p : image.pixels){
+            image_file.write((char*)&p.rgba,sizeof(uint32_t));
+            image_file.write((char*)&p.depth,sizeof(uint32_t));
+        }
         return;
     }
     RR_WriteLog("Error! Invalid format! Not writing image!");
@@ -706,7 +735,8 @@ RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
             uint32_t pixel_data;
             image_file.read((char*)&pixel_data,sizeof(uint32_t));
             temp_img.pixels.at(i).rgba = pixel_data;
-            temp_img.pixels.at(i).depth = 0;
+            image_file.read((char*)&pixel_data,sizeof(uint32_t));
+            temp_img.pixels.at(i).depth = pixel_data;
         }
 
         return temp_img;
@@ -714,6 +744,7 @@ RR_Image RR_LoadImage(RR_Window &window, std::string f_name){
     RR_WriteLog("Error! Invalid format! Not reading image!");
     return temp_img;
 };
+
 
 // Fancy graphics stuff
 

@@ -51,8 +51,10 @@ typedef enum {
 
 typedef struct RR_Pixel_t {
     RR_Color rgba;  // Color to be displayed
-    uint32_t depth = 0; // Depth of pixel
+    int32_t depth = 0; // Depth of pixel
 	void blend(RR_Pixel &p){
+		// TODO:
+		// Make this blend with depth?
 		int ba = ((rgba>>24) + (p.rgba>>24))>>1; // Alpha
 		int br = (((rgba>>16)&0xFF) + ((p.rgba>>16)&0xFF))>>1; // Red
 		int bg = (((rgba>>8)&0xFF) + ((p.rgba>>8)&0xFF))>>1; // Green
@@ -66,6 +68,31 @@ typedef struct RR_Image_t {
     int width; // Width of the image
     int height; // Height of the image
     std::vector<RR_Pixel> pixels; // List of pixels to be displayed
+	SDL_Surface *sdlSurface;
+
+	RR_Image_t(){
+		width = height = 0;
+		pixels.clear();
+		sdlSurface = NULL;
+	};
+
+	RR_Image_t(RR_Image_t &img){
+		pixels = img.pixels;
+		width = img.width;
+		height = img.height;
+		sdlSurface = NULL;
+	};
+
+	~RR_Image_t(){
+		if(sdlSurface != NULL){
+			SDL_FreeSurface(sdlSurface);
+			sdlSurface = NULL;
+		}
+	};
+	
+	RR_Image_t(const std::vector<RR_Pixel>& copydata){
+		pixels = copydata;
+	};
 	RR_Pixel sample(int x, int y){
 		if(x<0 || y<0 || x>=width ||y>=height) return RR_Pixel(0,0);
 		return pixels.at((y*width)+x);
@@ -74,7 +101,43 @@ typedef struct RR_Image_t {
 		if(x<0.0f || y<0.0f || x>1.0f ||y>1.0f) return RR_Pixel(0,0);
 		return pixels.at((int)((y*height*width)+(x*width)));
 	};
+	void setPixelDepth(int32_t depth) {
+		// Set all the pixels to a set depth
+		for(RR_Pixel &p : pixels){
+			p.depth = depth;
+		}
+	};
+	void updatePixelDepth(int32_t depth) {
+		// Change all the pixels by a depth
+		for(RR_Pixel &p : pixels){
+			p.depth += depth;
+		}
+	};
+	SDL_Surface *getSDLSurface(){
+		if(sdlSurface != NULL){
+			SDL_FreeSurface(sdlSurface);
+			sdlSurface = NULL;
+		}
+		sdlSurface = SDL_CreateRGBSurfaceWithFormat(0, width, height, 32, SDL_PIXELFORMAT_RGBA8888);
+		if(sdlSurface == NULL){
+			// Uh....
+		}else{
+			// Lock the surface so we can draw to it
+			SDL_LockSurface(sdlSurface);
 
+			// Copy the pixels over
+			uint32_t *surfacePixels = (Uint32 *)sdlSurface->pixels;
+			for(int y = 0; y < height; y++){
+				for(int x = 0; x < width; x++){
+					surfacePixels[(y*sdlSurface->w)+x] = pixels[(y*width)+x].rgba;
+				}
+			}
+
+			// Unlock the surface so we can display it
+			SDL_UnlockSurface(sdlSurface);			
+		}
+		return sdlSurface;
+	};
 }RR_Image;
 
 
@@ -200,13 +263,24 @@ pixel  -> pixel data to clear with
 void RR_ClearScreen(RR_Window &window, RR_Pixel pixel);
 
 /*
-Writes the current pixel buffer to a PNG file scaled
+Writes the current screen pixel buffer to a file /w scaling
 window -> window to get pixels from
 f_name -> name of image to be opened (valid are bmp, png, jpg/jpeg, raw, rri)
 sw     -> horizontal scale factor
 sh     -> vertical scale factor
 */
 void RR_WriteScreenToFile(RR_Window &window, std::string f_name, float sw = 1, float sh = 1);
+
+
+/*
+Writes an image to a file /w scaling
+window -> window to get info
+image  -> image to get pixels from
+f_name -> name of image to be opened (valid are bmp, png, jpg/jpeg, raw, rri)
+sw     -> horizontal scale factor
+sh     -> vertical scale factor
+*/
+void RR_WriteImageToFile(RR_Image &image, std::string f_name, float sw = 1, float sh = 1);
 
 /*
 Opens and loads an image

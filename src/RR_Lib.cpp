@@ -57,7 +57,7 @@ int OS_GlobalMouseY = 0;
 
 
 void RR_InitLibrary(void) {
-#ifdef _WIN64 || _WIN32
+#if (defined(_WIN64) || defined(_WIN32))
 	SDL_SetMainReady();
 #endif
 	RR_OpenLog();

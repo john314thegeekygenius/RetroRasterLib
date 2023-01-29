@@ -50,6 +50,41 @@ uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a
 #endif
 };
 
+uint32_t RR_HSV(RR_HSVColor hsv){ 
+    return RR_HSV(hsv.theta, hsv.saturation, hsv.value);
+};
+
+uint32_t RR_HSV(float angle, float saturation, float value){
+
+    // Limit the angle
+    while(angle > M_PI*2){
+        angle -= M_PI*2;
+    }
+    while(angle < 0){
+        angle += M_PI*2;
+    }
+    angle /= (M_PI/3);
+
+    float C = value * saturation;
+    float X = C * (1.0f-fabs( fmod(angle, 2.0f) - 1.0f));
+    float m = value - C;
+    float tR = 0.0f, tG = 0.0f, tB = 0.0f;
+    int angleThresh = floor(angle);
+
+    if(angleThresh==0){ tR = C; tG = X; tB = 0; }
+    if(angleThresh==1){ tR = X; tG = C; tB = 0; }
+    if(angleThresh==2){ tR = 0; tG = C; tB = X; }
+    if(angleThresh==3){ tR = 0; tG = X; tB = C; }
+    if(angleThresh==4){ tR = X; tG = 0; tB = C; }
+    if(angleThresh==5){ tR = C; tG = 0; tB = X; }
+
+    tR += m; tG += m; tB += m;
+    tR *= 255; tG *= 255; tB *= 255;
+
+    return RR_RGBA(tR, tG, tB);
+};
+
+
 void RR_SetAlphaBlend(RR_Window &window, uint32_t blend){
     window.alpha_blend = blend;
 };

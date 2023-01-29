@@ -43,6 +43,44 @@ typedef struct RR_Window_t RR_Window;
 typedef struct RR_Pixel_t RR_Pixel;
 typedef uint32_t RR_Color; // Uses ARGB format: 0xAARRGGBB
 
+typedef struct RR_HSVColor {
+	float theta;
+	float saturation;
+	float value;
+
+	RR_HSVColor(uint8_t r = 255,uint8_t g = 255,uint8_t b = 255){
+		fromRGB(r,g,b);
+	};
+	void fromRGB(uint8_t r, uint8_t g, uint8_t b){
+		// Convert RGB to HSV
+		float tR = r/255.0f;
+		float tG = g/255.0f;
+		float tB = b/255.0f;
+		float cmax = std::max(std::max(tR, tG),tB);
+		float cmin = std::min(std::min(tR, tG),tB);
+		float delta = cmax - cmin;
+		if(delta > 0.0f){
+			if(cmax == tR){
+				theta = (M_PI/3) * fmod(((tG - tB)/delta),6.0f);
+			}
+			if(cmax == tG){
+				theta = (M_PI/3) * (((tB - tR)/delta)+2);
+			}
+			if(cmax == tB){
+				theta = (M_PI/3) * (((tR - tG)/delta)+4);
+			}
+		}else{
+			theta = 0.0f;
+		}
+		if(cmax > 0.0f){
+			saturation = delta/cmax;
+		}else{
+			saturation = 0.0f;
+		}
+		value = cmax;
+	};
+}RR_HSVColor;
+
 typedef enum {
 	RR_BLEND_NONE 			= 0,
 	RR_BLEND_TRANSPARENT 	= 1,
@@ -158,6 +196,15 @@ a -> Alpha value (optional, default 255)
 */
 uint32_t RR_RGBA(unsigned char r,unsigned char g,unsigned char b,unsigned char a = 0xFF);
 
+/*
+angle -> angle from 0 - 360
+saturation -> saturation from 0 - 1
+value -> value (brightness) from 0 - 1
+*/
+uint32_t RR_HSV(float angle, float saturation, float value);
+
+// hsv -> HSV Color info to convert
+uint32_t RR_HSV(RR_HSVColor hsv);
 
 /*
 Sets the alpha blend type

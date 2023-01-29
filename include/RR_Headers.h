@@ -41,6 +41,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <cmath>
 
 #if (defined(_WIN64) || defined(_WIN32))
 #define SDL_MAIN_HANDLED
